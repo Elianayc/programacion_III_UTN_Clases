@@ -13,7 +13,7 @@ Contenido esperado:
 
 Clases actuales:
 
-- [`class-01-setup-hello-world`](./class-01-setup-hello-world/README.md)
+- [`class-01-setup-hello-world`](./class-01-setup-hello-world)
 
 ## English
 
@@ -28,4 +28,4 @@ Expected content:
 
 Current classes:
 
-- [`class-01-setup-hello-world`](./class-01-setup-hello-world/README.md)
+- [`class-01-setup-hello-world`](./class-01-setup-hello-world)
