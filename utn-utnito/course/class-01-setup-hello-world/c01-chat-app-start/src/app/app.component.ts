@@ -3,9 +3,12 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'app-root',
   template: `
-    <main class="class-screen">
-      <h1>UTNito Class 1 Starter</h1>
-      <p>Environment ready. Next step: build Hello UTNito.</p>
+    <main class="hello-screen">
+      <section class="hello-card">
+        <p class="label">Programming III</p>
+        <h1>Hello UTNito</h1>
+        <p class="subtitle">Your Angular environment is working from VS Code Play/F5.</p>
+      </section>
     </main>
   `,
   styleUrls: ['./app.component.css'],
