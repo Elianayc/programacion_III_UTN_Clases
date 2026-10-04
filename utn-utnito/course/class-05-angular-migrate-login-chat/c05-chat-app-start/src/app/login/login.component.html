@@ -8,12 +8,28 @@
 
     <form class="login-form" (submit)="onSubmit($event, usernameInput.value)" novalidate>
       <label for="username">Username</label>
-      <input #usernameInput id="username" type="text" placeholder="e.g. carlos.gardel" />
+      <input
+        #usernameInput
+        id="username"
+        name="username"
+        type="text"
+        placeholder="e.g. carlos.gardel"
+      />
 
       <label for="password">Password</label>
-      <input id="password" type="password" placeholder="Enter your password" />
+      <input
+        id="password"
+        name="password"
+        type="password"
+        placeholder="Enter your password"
+      />
 
       <button type="submit">Login</button>
     </form>
+
+    <footer class="login-footer">
+      <p class="program-name">UTN Programacion III</p>
+      <p>Academic prototype for educational use.</p>
+    </footer>
   </section>
 </main>

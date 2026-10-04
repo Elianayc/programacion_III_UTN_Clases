@@ -6,12 +6,13 @@
       <ul class="chat-list">
         <li class="chat-item active">Final project planning</li>
         <li class="chat-item">REST endpoint questions</li>
+        <li class="chat-item">Docker setup help</li>
       </ul>
     </div>
 
     <div class="sidebar-bottom">
       <div class="user-card">
-        <span class="user-avatar">CG</span>
+        <span class="user-avatar">{{ initials }}</span>
         <strong>{{ displayName }}</strong>
       </div>
       <button class="logout-btn" type="button" (click)="onLogoutClick()">Log out</button>
@@ -30,8 +31,15 @@
     </header>
 
     <section class="messages">
-      <article class="message assistant"><p>Hi! I am UTNito. Ready to help.</p></article>
-      <article class="message user"><p>Can we migrate this to Angular?</p></article>
+      <article class="message assistant">
+        <p>Hi! I am UTNito. Ready to help.</p>
+      </article>
+      <article class="message user">
+        <p>Can we migrate this screen to Angular?</p>
+      </article>
+      <article class="message assistant">
+        <p>Yes. We already moved static HTML into Angular components.</p>
+      </article>
     </section>
 
     <footer class="composer-wrap">
