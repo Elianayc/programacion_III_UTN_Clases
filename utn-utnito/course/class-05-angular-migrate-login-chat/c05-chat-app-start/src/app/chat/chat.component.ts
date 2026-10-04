@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-chat',
@@ -6,4 +6,11 @@ import { Component } from '@angular/core';
   styleUrls: ['./chat.component.css'],
   standalone: false
 })
-export class ChatComponent {}
+export class ChatComponent {
+  @Input() displayName = 'Carlos Gardel';
+  @Output() logoutRequested = new EventEmitter<void>();
+
+  onLogoutClick(): void {
+    this.logoutRequested.emit();
+  }
+}

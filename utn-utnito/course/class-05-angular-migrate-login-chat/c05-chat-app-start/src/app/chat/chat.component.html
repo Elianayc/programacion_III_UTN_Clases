@@ -12,9 +12,9 @@
     <div class="sidebar-bottom">
       <div class="user-card">
         <span class="user-avatar">CG</span>
-        <strong>Carlos Gardel</strong>
+        <strong>{{ displayName }}</strong>
       </div>
-      <button class="logout-btn" type="button">Log out</button>
+      <button class="logout-btn" type="button" (click)="onLogoutClick()">Log out</button>
     </div>
   </aside>
 

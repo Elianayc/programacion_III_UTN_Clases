@@ -6,14 +6,14 @@
       <p class="subtitle">Sign in to chat with <strong>UTNito</strong>.</p>
     </header>
 
-    <form class="login-form" novalidate>
+    <form class="login-form" (submit)="onSubmit($event, usernameInput.value)" novalidate>
       <label for="username">Username</label>
-      <input id="username" type="text" placeholder="e.g. carlos.gardel" />
+      <input #usernameInput id="username" type="text" placeholder="e.g. carlos.gardel" />
 
       <label for="password">Password</label>
       <input id="password" type="password" placeholder="Enter your password" />
 
-      <button type="button">Login</button>
+      <button type="submit">Login</button>
     </form>
   </section>
 </main>

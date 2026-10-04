@@ -6,4 +6,21 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css'],
   standalone: false
 })
-export class AppComponent {}
+export class AppComponent {
+  currentView: 'login' | 'chat' = 'login';
+  displayName = 'Carlos Gardel';
+
+  onLoginRequested(username: string): void {
+    const normalized = username.trim();
+
+    if (normalized) {
+      this.displayName = normalized;
+    }
+
+    this.currentView = 'chat';
+  }
+
+  onLogoutRequested(): void {
+    this.currentView = 'login';
+  }
+}
