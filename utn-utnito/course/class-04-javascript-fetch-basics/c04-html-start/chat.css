@@ -1,4 +1,7 @@
-/* Class 03 final styles: chat layout with basic Flexbox. */
+:root {
+  --sidebar-width: 260px;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -12,13 +15,29 @@ body {
 }
 
 .sidebar {
-  width: 260px;
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  max-width: var(--sidebar-width);
   padding: 14px;
   border-right: 1px solid #343740;
   background-color: #15161a;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.sidebar-resizer {
+  width: 8px;
+  cursor: col-resize;
+  background-color: #1b1d24;
+  border-right: 1px solid #2c303c;
+  border-left: 1px solid #2c303c;
+}
+
+.sidebar-resizer:hover,
+.sidebar-resizer.is-active {
+  background-color: #30374a;
 }
 
 .new-chat-btn {
@@ -46,15 +65,51 @@ body {
 
 .chat-item {
   margin-bottom: 8px;
-  padding: 10px;
   border: 1px solid transparent;
   border-radius: 10px;
-  color: #d5d8e0;
+  padding: 4px;
 }
 
 .chat-item.active {
   border-color: #444854;
   background-color: #2a2d35;
+}
+
+.chat-item-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chat-item-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #d5d8e0;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.chat-item.active .chat-item-btn {
+  color: #ffffff;
+}
+
+.chat-delete-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  background-color: #3a3d47;
+  color: #d5d8e0;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.chat-delete-btn:hover {
+  background-color: #4a2d35;
   color: #ffffff;
 }
 
@@ -88,6 +143,7 @@ body {
 }
 
 .chat-main {
+  min-width: 0;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -121,6 +177,11 @@ body {
   font-size: 18px;
 }
 
+.active-chat-line {
+  font-size: 14px !important;
+  color: #d2d6df !important;
+}
+
 .messages {
   flex: 1;
   padding: 16px;
@@ -129,7 +190,7 @@ body {
 
 .message {
   display: block;
-  max-width: 70%;
+  max-width: 30%;
   margin-bottom: 12px;
   padding: 10px 12px;
   border: 1px solid #41465a;
@@ -141,6 +202,11 @@ body {
   margin-left: auto;
   border-color: #8f4652;
   background-color: #4a2d35;
+}
+
+.message.system {
+  border-color: #506070;
+  background-color: #233040;
 }
 
 .message p {
@@ -177,4 +243,9 @@ body {
   padding: 0 20px;
   font-size: 16px;
   font-weight: 700;
+}
+
+.composer button:disabled,
+#composer-input:disabled {
+  opacity: 0.7;
 }
