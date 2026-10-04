@@ -10,23 +10,49 @@
   <body>
     <div class="chat-layout">
       <aside class="sidebar">
-        <button class="new-chat-btn">+ New chat</button>
-        <p class="section-title">Your chats</p>
-        <ul class="chat-list">
-          <li class="chat-item active">Final project planning</li>
-          <li class="chat-item">REST endpoint questions</li>
-        </ul>
+        <div class="sidebar-top">
+          <button class="new-chat-btn">+ New chat</button>
+          <p class="section-title">Your chats</p>
+          <ul class="chat-list">
+            <li class="chat-item active">Final project planning</li>
+            <li class="chat-item">REST endpoint questions</li>
+            <li class="chat-item">Docker setup help</li>
+            <li class="chat-item">Class checkpoint review</li>
+          </ul>
+        </div>
+
+        <div class="sidebar-bottom">
+          <div class="user-card">
+            <span class="user-avatar">CG</span>
+            <strong>Carlos Gardel</strong>
+          </div>
+          <a id="logout-link" href="./login.html">Log out</a>
+        </div>
       </aside>
 
       <main class="chat-main">
         <header class="chat-header">
-          <h1>UTNito</h1>
-          <p>Feel free to talk to UTNito about anything.</p>
+          <div class="brand-block">
+            <img src="./assets/utnito-logo.svg" alt="UTNito logo" class="brand-logo" />
+            <div>
+              <h1>UTNito</h1>
+              <p>Feel free to talk to UTNito about anything.</p>
+            </div>
+          </div>
         </header>
 
         <section class="messages">
-          <article class="message assistant"><p>Hi! I am UTNito.</p></article>
-          <article class="message user"><p>Can you explain today's class?</p></article>
+          <article class="message assistant">
+            <p>Hi! I am UTNito. Ready to help.</p>
+          </article>
+
+          <article class="message user">
+            <p>Can you explain today's CSS class goals?</p>
+          </article>
+
+          <article class="message assistant">
+            <p>Yes. Today we build chat layout structure, box model understanding, and Flexbox basics.</p>
+          </article>
         </section>
 
         <footer class="composer-wrap">
