@@ -48,6 +48,8 @@ export class ChatComponent {
 
   selectedConversationId = 'conv-1';
   draftMessage = '';
+  messageCounter = 3;
+  conversationCounter = 3;
 
   constructor(private readonly router: Router) {}
 
@@ -70,11 +72,67 @@ export class ChatComponent {
     this.selectedConversationId = conversationId;
   }
 
+  createNewConversation(): void {
+    const nextConversationIndex = this.conversationCounter + 1;
+    const newConversationId = this.buildConversationId();
+
+    const newConversation: ChatConversation = {
+      id: newConversationId,
+      title: `New conversation ${nextConversationIndex}`,
+      messages: [
+        {
+          id: this.buildMessageId(),
+          role: 'assistant',
+          content: 'New chat created. Ask me anything.',
+        },
+      ],
+    };
+
+    this.conversations.unshift(newConversation);
+    this.selectedConversationId = newConversation.id;
+    this.draftMessage = '';
+  }
+
   onDraftInput(value: string): void {
     this.draftMessage = value;
   }
 
+  sendMessage(event: Event): void {
+    event.preventDefault();
+
+    const activeConversation = this.activeConversation;
+    const normalizedDraft = this.draftMessage.trim();
+
+    if (!activeConversation || !normalizedDraft) {
+      return;
+    }
+
+    activeConversation.messages.push({
+      id: this.buildMessageId(),
+      role: 'user',
+      content: normalizedDraft,
+    });
+
+    activeConversation.messages.push({
+      id: this.buildMessageId(),
+      role: 'assistant',
+      content: `Mock reply: I received "${normalizedDraft}".`,
+    });
+
+    this.draftMessage = '';
+  }
+
   onLogoutClick(): void {
     this.router.navigate(['/login']);
+  }
+
+  private buildConversationId(): string {
+    this.conversationCounter += 1;
+    return `conv-${this.conversationCounter}`;
+  }
+
+  private buildMessageId(): string {
+    this.messageCounter += 1;
+    return `m-${this.messageCounter}`;
   }
 }

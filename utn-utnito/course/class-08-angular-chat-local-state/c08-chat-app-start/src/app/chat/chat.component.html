@@ -1,7 +1,7 @@
 <div class="chat-layout">
   <aside class="sidebar">
     <div class="sidebar-top">
-      <button class="new-chat-btn" type="button">+ New chat</button>
+      <button class="new-chat-btn" type="button" (click)="createNewConversation()">+ New chat</button>
       <p class="section-title">Your chats</p>
       <ul class="chat-list">
         <li
@@ -55,7 +55,7 @@
     </section>
 
     <footer class="composer-wrap">
-      <form class="composer" (submit)="$event.preventDefault()">
+      <form class="composer" (submit)="sendMessage($event)">
         <textarea
           #draftInput
           rows="1"
