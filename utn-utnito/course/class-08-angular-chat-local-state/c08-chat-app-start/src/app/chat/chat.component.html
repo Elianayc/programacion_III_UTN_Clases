@@ -36,11 +36,21 @@
     </header>
 
     <section class="messages">
-      <article class="message assistant">
-        <p>Step 2: sidebar selection now controls the active conversation in local state.</p>
+      <article class="message assistant" *ngIf="!activeConversation">
+        <p>Select a conversation to start.</p>
       </article>
-      <article class="message assistant">
-        <p>Select another chat from the left and watch this header refresh.</p>
+
+      <article class="message assistant" *ngIf="activeConversation && !visibleMessages.length">
+        <p>This conversation has no messages yet.</p>
+      </article>
+
+      <article
+        class="message"
+        *ngFor="let message of visibleMessages"
+        [class.assistant]="message.role === 'assistant'"
+        [class.user]="message.role === 'user'"
+      >
+        <p>{{ message.content }}</p>
       </article>
     </section>
 
@@ -53,7 +63,7 @@
           [value]="draftMessage"
           (input)="onDraftInput(draftInput.value)"
         ></textarea>
-        <button type="submit" [disabled]="!draftMessage.trim()">Send</button>
+        <button type="submit" [disabled]="!activeConversation || !draftMessage.trim()">Send</button>
       </form>
     </footer>
   </main>

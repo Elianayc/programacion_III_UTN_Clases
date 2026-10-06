@@ -45,6 +45,7 @@
   border-radius: 10px;
   padding: 10px;
   color: #d5d8e0;
+  cursor: pointer;
 }
 
 .chat-item.active {

@@ -1,9 +1,18 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
+type MessageRole = 'assistant' | 'user';
+
+interface ChatMessage {
+  id: string;
+  role: MessageRole;
+  content: string;
+}
+
 interface ChatConversation {
   id: string;
   title: string;
+  messages: ChatMessage[];
 }
 
 @Component({
@@ -17,9 +26,24 @@ export class ChatComponent {
   readonly initials = 'CG';
 
   conversations: ChatConversation[] = [
-    { id: 'conv-1', title: 'Final project planning' },
-    { id: 'conv-2', title: 'REST endpoint questions' },
-    { id: 'conv-3', title: 'Docker setup help' },
+    {
+      id: 'conv-1',
+      title: 'Final project planning',
+      messages: [
+        { id: 'm-1', role: 'assistant', content: 'Hi! Ready to review today\'s class goals?' },
+        { id: 'm-2', role: 'user', content: 'Yes, show me the checkpoint for class 8.' },
+      ],
+    },
+    {
+      id: 'conv-2',
+      title: 'REST endpoint questions',
+      messages: [{ id: 'm-3', role: 'assistant', content: 'Ask me anything about API design.' }],
+    },
+    {
+      id: 'conv-3',
+      title: 'Docker setup help',
+      messages: [],
+    },
   ];
 
   selectedConversationId = 'conv-1';
@@ -27,12 +51,19 @@ export class ChatComponent {
 
   constructor(private readonly router: Router) {}
 
-  get activeConversationTitle(): string {
-    const activeConversation = this.conversations.find(
-      (conversation) => conversation.id === this.selectedConversationId,
+  get activeConversation(): ChatConversation | null {
+    return (
+      this.conversations.find((conversation) => conversation.id === this.selectedConversationId) ||
+      null
     );
+  }
 
-    return activeConversation?.title || 'No conversation selected';
+  get activeConversationTitle(): string {
+    return this.activeConversation?.title || 'No conversation selected';
+  }
+
+  get visibleMessages(): ChatMessage[] {
+    return this.activeConversation?.messages || [];
   }
 
   selectConversation(conversationId: string): void {
