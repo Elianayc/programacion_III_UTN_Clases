@@ -90,3 +90,10 @@
   color: #e7a6b0;
   font-weight: 700;
 }
+
+.error-text {
+  margin-top: 8px;
+  margin-bottom: 0;
+  color: #ff99a9;
+  font-size: 13px;
+}

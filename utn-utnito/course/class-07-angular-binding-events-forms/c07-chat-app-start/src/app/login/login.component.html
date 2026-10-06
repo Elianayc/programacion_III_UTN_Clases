@@ -6,7 +6,7 @@
       <p class="subtitle">Sign in to chat with <strong>UTNito</strong>.</p>
     </header>
 
-    <form class="login-form" (submit)="onSubmit($event, usernameInput.value)" novalidate>
+    <form class="login-form" (submit)="onSubmit($event)" novalidate>
       <label for="username">Username</label>
       <input
         #usernameInput
@@ -14,14 +14,19 @@
         name="username"
         type="text"
         placeholder="e.g. carlos.gardel"
+        [value]="username"
+        (input)="onUsernameInput(usernameInput.value)"
       />
 
       <label for="password">Password</label>
       <input
+        #passwordInput
         id="password"
         name="password"
         type="password"
         placeholder="Enter your password"
+        [value]="password"
+        (input)="onPasswordInput(passwordInput.value)"
       />
 
       <button type="submit">Login</button>
