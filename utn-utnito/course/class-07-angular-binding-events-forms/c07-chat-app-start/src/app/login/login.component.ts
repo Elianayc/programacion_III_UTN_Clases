@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 @Component({
@@ -8,34 +9,50 @@ import { Router } from '@angular/router';
   standalone: false,
 })
 export class LoginComponent {
-  username = '';
-  password = '';
-  errorMessage = '';
+  loginForm: FormGroup;
+  submitted = false;
+  formMessage = '';
 
-  constructor(private readonly router: Router) {}
-
-  onUsernameInput(value: string): void {
-    this.username = value;
-    this.errorMessage = '';
+  constructor(
+    private readonly formBuilder: FormBuilder,
+    private readonly router: Router,
+  ) {
+    this.loginForm = this.formBuilder.group({
+      username: ['', [Validators.required, Validators.minLength(3)]],
+      password: ['', [Validators.required, Validators.minLength(1)]],
+    });
   }
 
-  onPasswordInput(value: string): void {
-    this.password = value;
-    this.errorMessage = '';
+  get usernameControl() {
+    return this.loginForm.get('username');
   }
 
-  onSubmit(event: Event): void {
-    event.preventDefault();
+  get passwordControl() {
+    return this.loginForm.get('password');
+  }
 
-    const normalizedUsername = this.username.trim();
-    const normalizedPassword = this.password.trim();
+  get showUsernameRequired(): boolean {
+    return !!this.usernameControl?.touched && !!this.usernameControl?.hasError('required');
+  }
 
-    if (!normalizedUsername || !normalizedPassword) {
-      this.errorMessage = 'Username and password are required.';
+  get showUsernameMinLength(): boolean {
+    return !!this.usernameControl?.touched && !!this.usernameControl?.hasError('minlength');
+  }
+
+  get showPasswordRequired(): boolean {
+    return !!this.passwordControl?.touched && !!this.passwordControl?.hasError('required');
+  }
+
+  onSubmit(): void {
+    this.submitted = true;
+    this.formMessage = '';
+
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      this.formMessage = 'Complete valid credentials to continue.';
       return;
     }
 
-    this.errorMessage = '';
     this.router.navigate(['/chat']);
   }
 }
