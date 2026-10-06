@@ -6,13 +6,27 @@
       <ul class="chat-list">
         <li
           class="chat-item"
-          *ngFor="let conversation of conversations"
+          *ngFor="let conversation of visibleConversations"
           [class.active]="conversation.id === selectedConversationId"
-          (click)="selectConversation(conversation.id)"
         >
-          {{ conversation.title }}
+          <button class="chat-item-select" type="button" (click)="selectConversation(conversation.id)">
+            {{ conversation.title }}
+          </button>
+
+          <button
+            class="conversation-item-archive"
+            type="button"
+            aria-label="Archive conversation"
+            (click)="archiveConversation(conversation.id, $event)"
+          >
+            🗑
+          </button>
         </li>
       </ul>
+
+      <p class="empty-list" *ngIf="!visibleConversations.length">
+        No active chats available.
+      </p>
     </div>
 
     <div class="sidebar-bottom">

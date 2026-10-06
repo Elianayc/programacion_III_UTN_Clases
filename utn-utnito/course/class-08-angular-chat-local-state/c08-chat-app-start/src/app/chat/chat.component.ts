@@ -12,6 +12,7 @@ interface ChatMessage {
 interface ChatConversation {
   id: string;
   title: string;
+  archived: boolean;
   messages: ChatMessage[];
 }
 
@@ -29,6 +30,7 @@ export class ChatComponent {
     {
       id: 'conv-1',
       title: 'Final project planning',
+      archived: false,
       messages: [
         { id: 'm-1', role: 'assistant', content: 'Hi! Ready to review today\'s class goals?' },
         { id: 'm-2', role: 'user', content: 'Yes, show me the checkpoint for class 8.' },
@@ -37,27 +39,42 @@ export class ChatComponent {
     {
       id: 'conv-2',
       title: 'REST endpoint questions',
+      archived: false,
       messages: [{ id: 'm-3', role: 'assistant', content: 'Ask me anything about API design.' }],
     },
     {
       id: 'conv-3',
       title: 'Docker setup help',
+      archived: false,
       messages: [],
     },
   ];
 
-  selectedConversationId = 'conv-1';
+  selectedConversationId: string | null = 'conv-1';
   draftMessage = '';
   messageCounter = 3;
   conversationCounter = 3;
 
   constructor(private readonly router: Router) {}
 
+  get visibleConversations(): ChatConversation[] {
+    return this.conversations.filter((conversation) => !conversation.archived);
+  }
+
   get activeConversation(): ChatConversation | null {
-    return (
-      this.conversations.find((conversation) => conversation.id === this.selectedConversationId) ||
-      null
+    if (!this.selectedConversationId) {
+      return null;
+    }
+
+    const activeConversation = this.conversations.find(
+      (conversation) => conversation.id === this.selectedConversationId,
     );
+
+    if (!activeConversation || activeConversation.archived) {
+      return null;
+    }
+
+    return activeConversation;
   }
 
   get activeConversationTitle(): string {
@@ -79,6 +96,7 @@ export class ChatComponent {
     const newConversation: ChatConversation = {
       id: newConversationId,
       title: `New conversation ${nextConversationIndex}`,
+      archived: false,
       messages: [
         {
           id: this.buildMessageId(),
@@ -91,6 +109,21 @@ export class ChatComponent {
     this.conversations.unshift(newConversation);
     this.selectedConversationId = newConversation.id;
     this.draftMessage = '';
+  }
+
+  archiveConversation(conversationId: string, event: MouseEvent): void {
+    event.stopPropagation();
+
+    const conversation = this.conversations.find((item) => item.id === conversationId && !item.archived);
+    if (!conversation) {
+      return;
+    }
+
+    conversation.archived = true;
+
+    if (this.selectedConversationId === conversationId) {
+      this.selectedConversationId = this.visibleConversations[0]?.id || null;
+    }
   }
 
   onDraftInput(value: string): void {
