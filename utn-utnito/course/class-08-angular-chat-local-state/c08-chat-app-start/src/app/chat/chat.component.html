@@ -4,9 +4,14 @@
       <button class="new-chat-btn" type="button">+ New chat</button>
       <p class="section-title">Your chats</p>
       <ul class="chat-list">
-        <li class="chat-item active">Final project planning</li>
-        <li class="chat-item">REST endpoint questions</li>
-        <li class="chat-item">Docker setup help</li>
+        <li
+          class="chat-item"
+          *ngFor="let conversation of conversations"
+          [class.active]="conversation.id === selectedConversationId"
+          (click)="selectConversation(conversation.id)"
+        >
+          {{ conversation.title }}
+        </li>
       </ul>
     </div>
 
@@ -25,25 +30,22 @@
         <img src="assets/utnito-logo.svg" alt="UTNito logo" class="brand-logo" />
         <div>
           <h1>UTNito</h1>
-          <p>Feel free to talk to UTNito about anything.</p>
+          <p>Active conversation: <strong>{{ activeConversationTitle }}</strong></p>
         </div>
       </div>
     </header>
 
     <section class="messages">
       <article class="message assistant">
-        <p>Hi! I am UTNito. Ready to help.</p>
-      </article>
-      <article class="message user">
-        <p>Can we migrate this screen to Angular?</p>
+        <p>Step 2: sidebar selection now controls the active conversation in local state.</p>
       </article>
       <article class="message assistant">
-        <p>Yes. We already moved static HTML into Angular components.</p>
+        <p>Select another chat from the left and watch this header refresh.</p>
       </article>
     </section>
 
     <footer class="composer-wrap">
-      <form class="composer" (submit)="onComposerSubmit($event)">
+      <form class="composer" (submit)="$event.preventDefault()">
         <textarea
           #draftInput
           rows="1"
@@ -53,10 +55,6 @@
         ></textarea>
         <button type="submit" [disabled]="!draftMessage.trim()">Send</button>
       </form>
-
-      <p class="composer-note" [hidden]="!lastSentMessage">
-        Last message sent: <strong>{{ lastSentMessage }}</strong>
-      </p>
     </footer>
   </main>
 </div>

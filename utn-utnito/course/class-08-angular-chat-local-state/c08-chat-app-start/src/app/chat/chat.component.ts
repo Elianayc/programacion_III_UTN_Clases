@@ -1,6 +1,11 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
+interface ChatConversation {
+  id: string;
+  title: string;
+}
+
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
@@ -11,26 +16,31 @@ export class ChatComponent {
   readonly displayName = 'Carlos Gardel';
   readonly initials = 'CG';
 
+  conversations: ChatConversation[] = [
+    { id: 'conv-1', title: 'Final project planning' },
+    { id: 'conv-2', title: 'REST endpoint questions' },
+    { id: 'conv-3', title: 'Docker setup help' },
+  ];
+
+  selectedConversationId = 'conv-1';
   draftMessage = '';
-  lastSentMessage = '';
 
   constructor(private readonly router: Router) {}
 
-  onDraftInput(value: string): void {
-    this.draftMessage = value;
+  get activeConversationTitle(): string {
+    const activeConversation = this.conversations.find(
+      (conversation) => conversation.id === this.selectedConversationId,
+    );
+
+    return activeConversation?.title || 'No conversation selected';
   }
 
-  onComposerSubmit(event: Event): void {
-    event.preventDefault();
+  selectConversation(conversationId: string): void {
+    this.selectedConversationId = conversationId;
+  }
 
-    const normalized = this.draftMessage.trim();
-    if (!normalized) {
-      return;
-    }
-
-    console.log('[class-7-end] message submitted:', normalized);
-    this.lastSentMessage = normalized;
-    this.draftMessage = '';
+  onDraftInput(value: string): void {
+    this.draftMessage = value;
   }
 
   onLogoutClick(): void {
