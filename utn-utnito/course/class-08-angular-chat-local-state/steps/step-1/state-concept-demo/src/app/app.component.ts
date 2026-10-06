@@ -13,7 +13,10 @@ interface DemoConversation {
   styleUrls: ['./app.component.css'],
   standalone: false,
 })
+
 export class AppComponent {
+
+  //Estado 
   title = 'Class 8 - Local state concept demo';
   nextConversationTitle = '';
   nextConversationText = '';
@@ -26,6 +29,7 @@ export class AppComponent {
     { id: 'conv-2', title: 'REST doubts', text: 'Need examples for endpoint naming.', archived: false },
     { id: 'conv-3', title: 'Old notes', text: 'Previous semester reminders.', archived: true },
   ];
+  //Fin Estado
 
   get activeConversations(): DemoConversation[] {
     return this.conversations.filter((conversation) => !conversation.archived);
@@ -49,7 +53,7 @@ export class AppComponent {
       return;
     }
 
-    // unshift adds at the beginning of the list; push adds at the end.
+    // unshift agrega al inicio de la lista
     this.conversations.unshift({
       id: this.buildConversationId(),
       title,
