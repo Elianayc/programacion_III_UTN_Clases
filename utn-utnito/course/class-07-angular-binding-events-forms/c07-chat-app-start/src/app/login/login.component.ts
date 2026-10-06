@@ -10,25 +10,32 @@ import { Router } from '@angular/router';
 export class LoginComponent {
   username = '';
   password = '';
+  errorMessage = '';
 
   constructor(private readonly router: Router) {}
 
   onUsernameInput(value: string): void {
     this.username = value;
-    console.log('[step-3] username input:', this.username);
+    this.errorMessage = '';
   }
 
   onPasswordInput(value: string): void {
     this.password = value;
-    console.log('[step-3] password input length:', this.password.length);
+    this.errorMessage = '';
   }
 
   onSubmit(event: Event): void {
     event.preventDefault();
-    console.log('[step-3] submit captured:', {
-      username: this.username,
-      passwordLength: this.password.length,
-    });
+
+    const normalizedUsername = this.username.trim();
+    const normalizedPassword = this.password.trim();
+
+    if (!normalizedUsername || !normalizedPassword) {
+      this.errorMessage = 'Username and password are required.';
+      return;
+    }
+
+    this.errorMessage = '';
     this.router.navigate(['/chat']);
   }
 }

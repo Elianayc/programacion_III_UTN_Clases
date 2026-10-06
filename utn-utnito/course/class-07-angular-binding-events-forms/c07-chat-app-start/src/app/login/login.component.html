@@ -29,6 +29,8 @@
         (input)="onPasswordInput(passwordInput.value)"
       />
 
+      <p class="error-text" [hidden]="!errorMessage">{{ errorMessage }}</p>
+
       <button type="submit">Login</button>
     </form>
 
