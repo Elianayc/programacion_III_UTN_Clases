@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Conversation } from '../core/model/conversation.interface';
 import { Message } from '../core/model/message.interface';
 import { MessageRole } from '../core/model/message-role.enum';
+import { AuthService } from '../core/service/auth.service';
 import { ChatService } from '../core/service/chat.service';
 
 @Component({
@@ -11,10 +12,8 @@ import { ChatService } from '../core/service/chat.service';
   styleUrls: ['./chat.component.css'],
   standalone: false,
 })
-export class ChatComponent {
+export class ChatComponent implements OnInit {
   protected readonly messageRole = MessageRole;
-  readonly displayName = 'Carlos Gardel';
-  readonly initials = 'CG';
 
   selectedConversationId: string | null = null;
   conversationFilter = '';
@@ -22,9 +21,25 @@ export class ChatComponent {
 
   constructor(
     private readonly router: Router,
+    private readonly authService: AuthService,
     private readonly chatService: ChatService,
-  ) {
+  ) {}
+
+  ngOnInit(): void {
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
     this.syncSelectedConversation();
+  }
+
+  get displayName(): string {
+    return this.authService.getDisplayName();
+  }
+
+  get initials(): string {
+    return this.authService.getInitials();
   }
 
   get filteredConversations(): Conversation[] {
@@ -78,6 +93,7 @@ export class ChatComponent {
   }
 
   onLogoutClick(): void {
+    this.authService.logout();
     this.router.navigate(['/login']);
   }
 
