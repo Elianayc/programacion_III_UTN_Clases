@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { AuthService } from '../core/service/auth.service';
 import { ChatService } from '../core/service/chat.service';
 import { Conversation } from '../core/model/conversation.interface';
@@ -14,6 +15,8 @@ import { MessageRole } from '../core/model/message-role.enum';
 })
 export class ChatComponent implements OnInit {
   readonly messageRole = MessageRole;
+  loadingConversations = false;
+  errorMessage: string | null = null;
 
   constructor(
     private readonly router: Router,
@@ -27,7 +30,7 @@ export class ChatComponent implements OnInit {
       return;
     }
 
-    this.chatService.ensureSelectedConversation();
+    this.loadConversations();
   }
 
   get displayName(): string {
@@ -89,11 +92,33 @@ export class ChatComponent implements OnInit {
 
   sendMessage(event: Event): void {
     event.preventDefault();
-    this.chatService.sendDraftMessage();
+
+    const sendOk = this.chatService.sendDraftMessage();
+    if (!sendOk) {
+      this.errorMessage = 'Message cannot be empty.';
+    }
   }
 
   onLogoutClick(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  private loadConversations(): void {
+    this.loadingConversations = true;
+    this.errorMessage = null;
+
+    this.chatService
+      .loadConversations()
+      .pipe(
+        finalize(() => {
+          this.loadingConversations = false;
+        }),
+      )
+      .subscribe({
+        error: (error: unknown) => {
+          this.errorMessage = error instanceof Error ? error.message : 'Failed to load conversations.';
+        },
+      });
   }
 }

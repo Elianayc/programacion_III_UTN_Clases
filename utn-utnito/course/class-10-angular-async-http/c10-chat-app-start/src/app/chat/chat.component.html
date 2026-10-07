@@ -3,6 +3,7 @@
     <div class="sidebar-top">
       <button class="new-chat-btn" type="button" (click)="createNewConversation()">+ New chat</button>
       <p class="section-title">Your chats</p>
+      <p class="loading-state" *ngIf="loadingConversations">Loading conversations...</p>
 
       <label class="chat-filter-label" for="chat-filter">Filter chats</label>
       <input
@@ -81,6 +82,7 @@
     </section>
 
     <footer class="composer-wrap">
+      <p class="error-state" *ngIf="errorMessage">{{ errorMessage }}</p>
       <form class="composer" (submit)="sendMessage($event)">
         <textarea
           #draftInput
