@@ -16,6 +16,7 @@ import { MessageRole } from '../core/model/message-role.enum';
 export class ChatComponent implements OnInit {
   readonly messageRole = MessageRole;
   loadingConversations = false;
+  loadingMessages = false;
   errorMessage: string | null = null;
 
   constructor(
@@ -71,10 +72,16 @@ export class ChatComponent implements OnInit {
 
   selectConversation(conversationId: string): void {
     this.chatService.selectConversation(conversationId);
+    this.loadMessages(conversationId);
   }
 
   createNewConversation(): void {
     this.chatService.createNewConversation();
+    const selectedConversationId = this.chatService.getSelectedConversationId();
+
+    if (selectedConversationId) {
+      this.loadMessages(selectedConversationId);
+    }
   }
 
   archiveConversation(conversationId: string, event: MouseEvent): void {
@@ -84,6 +91,11 @@ export class ChatComponent implements OnInit {
 
   onConversationFilterInput(value: string): void {
     this.chatService.setConversationFilter(value);
+
+    const selectedConversationId = this.chatService.getSelectedConversationId();
+    if (selectedConversationId) {
+      this.loadMessages(selectedConversationId);
+    }
   }
 
   onDraftInput(value: string): void {
@@ -116,8 +128,32 @@ export class ChatComponent implements OnInit {
         }),
       )
       .subscribe({
+        next: () => {
+          const selectedConversationId = this.chatService.getSelectedConversationId();
+          if (selectedConversationId) {
+            this.loadMessages(selectedConversationId);
+          }
+        },
         error: (error: unknown) => {
           this.errorMessage = error instanceof Error ? error.message : 'Failed to load conversations.';
+        },
+      });
+  }
+
+  private loadMessages(conversationId: string): void {
+    this.loadingMessages = true;
+    this.errorMessage = null;
+
+    this.chatService
+      .loadMessages(conversationId)
+      .pipe(
+        finalize(() => {
+          this.loadingMessages = false;
+        }),
+      )
+      .subscribe({
+        error: (error: unknown) => {
+          this.errorMessage = error instanceof Error ? error.message : 'Failed to load messages.';
         },
       });
   }

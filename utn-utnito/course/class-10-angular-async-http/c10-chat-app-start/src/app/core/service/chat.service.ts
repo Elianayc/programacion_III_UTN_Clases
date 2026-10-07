@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { map, Observable, tap } from 'rxjs';
+import { map, Observable, of, tap } from 'rxjs';
 import { Conversation } from '../model/conversation.interface';
 import { Message } from '../model/message.interface';
 import { MessageRole } from '../model/message-role.enum';
@@ -14,6 +14,7 @@ export class ChatService {
   private draftMessage = '';
 
   private conversations: Conversation[] = [];
+  private readonly messagesByConversationId: Record<string, Message[]> = {};
 
   constructor(private readonly chatApiService: ChatApiService) {}
 
@@ -87,7 +88,11 @@ export class ChatService {
   }
 
   getVisibleMessages(): Message[] {
-    return this.getActiveConversation()?.messages || [];
+    if (!this.selectedConversationId) {
+      return [];
+    }
+
+    return this.messagesByConversationId[this.selectedConversationId] || [];
   }
 
   loadConversations(): Observable<Conversation[]> {
@@ -101,27 +106,48 @@ export class ChatService {
     );
   }
 
+  loadMessages(conversationId: string): Observable<Message[]> {
+    const cachedMessages = this.messagesByConversationId[conversationId];
+
+    if (cachedMessages) {
+      return of(cachedMessages);
+    }
+
+    return this.chatApiService.listMessages(conversationId).pipe(
+      // Keep only the message array from the paginated response object.
+      map((pagination) => pagination.data),
+      tap((messages) => {
+        this.messagesByConversationId[conversationId] = messages;
+      }),
+    );
+  }
+
   selectConversation(conversationId: string): void {
     this.selectedConversationId = conversationId;
   }
 
   createNewConversation(): void {
     const nextConversationIndex = this.getConversations().length + 1;
+    const newConversationId = `conv-local-${Date.now()}`;
+
     const newConversation: Conversation = {
-      id: `conv-local-${Date.now()}`,
+      id: newConversationId,
       title: `New conversation ${nextConversationIndex}`,
       archived: false,
-      messages: [
-        {
-          id: `m-local-${Date.now()}`,
-          role: MessageRole.ASSISTANT,
-          content: 'New local conversation created. Send your first message.',
-        },
-      ],
+      messages: [],
     };
 
     this.conversations.unshift(newConversation);
-    this.selectedConversationId = newConversation.id;
+
+    this.messagesByConversationId[newConversationId] = [
+      {
+        id: `m-local-${Date.now()}`,
+        role: MessageRole.ASSISTANT,
+        content: 'New local conversation created. Send your first message.',
+      },
+    ];
+
+    this.selectedConversationId = newConversationId;
     this.conversationFilter = '';
     this.draftMessage = '';
   }
@@ -148,13 +174,20 @@ export class ChatService {
       return false;
     }
 
-    activeConversation.messages.push({
+    const conversationId = activeConversation.id;
+    const conversationMessages = this.messagesByConversationId[conversationId] || [];
+
+    if (!this.messagesByConversationId[conversationId]) {
+      this.messagesByConversationId[conversationId] = conversationMessages;
+    }
+
+    conversationMessages.push({
       id: `m-user-${Date.now()}`,
       role: MessageRole.USER,
       content: normalizedDraft,
     });
 
-    activeConversation.messages.push({
+    conversationMessages.push({
       id: `m-assistant-${Date.now() + 1}`,
       role: MessageRole.ASSISTANT,
       content: `Local reply: I received "${normalizedDraft}".`,

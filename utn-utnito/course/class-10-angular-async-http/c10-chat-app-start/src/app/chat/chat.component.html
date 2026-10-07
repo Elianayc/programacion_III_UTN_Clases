@@ -63,6 +63,10 @@
     </header>
 
     <section class="messages">
+      <article class="message assistant" *ngIf="loadingMessages">
+        <p>Loading messages...</p>
+      </article>
+
       <article class="message assistant" *ngIf="!activeConversation">
         <p>Select a conversation to start.</p>
       </article>
@@ -71,14 +75,16 @@
         <p>This conversation has no messages yet.</p>
       </article>
 
-      <article
-        class="message"
-        *ngFor="let message of visibleMessages"
-        [class.assistant]="message.role === messageRole.ASSISTANT"
-        [class.user]="message.role === messageRole.USER"
-      >
-        <p>{{ message.content }}</p>
-      </article>
+      <ng-container *ngIf="!loadingMessages">
+        <article
+          class="message"
+          *ngFor="let message of visibleMessages"
+          [class.assistant]="message.role === messageRole.ASSISTANT"
+          [class.user]="message.role === messageRole.USER"
+        >
+          <p>{{ message.content }}</p>
+        </article>
+      </ng-container>
     </section>
 
     <footer class="composer-wrap">
