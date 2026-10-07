@@ -17,6 +17,7 @@ export class ChatComponent implements OnInit {
   readonly messageRole = MessageRole;
   loadingConversations = false;
   loadingMessages = false;
+  sendingMessage = false;
   errorMessage: string | null = null;
 
   constructor(
@@ -105,10 +106,21 @@ export class ChatComponent implements OnInit {
   sendMessage(event: Event): void {
     event.preventDefault();
 
-    const sendOk = this.chatService.sendDraftMessage();
-    if (!sendOk) {
-      this.errorMessage = 'Message cannot be empty.';
-    }
+    this.sendingMessage = true;
+    this.errorMessage = null;
+
+    this.chatService
+      .sendDraftMessage()
+      .pipe(
+        finalize(() => {
+          this.sendingMessage = false;
+        }),
+      )
+      .subscribe({
+        error: (error: unknown) => {
+          this.errorMessage = error instanceof Error ? error.message : 'Failed to send message.';
+        },
+      });
   }
 
   onLogoutClick(): void {

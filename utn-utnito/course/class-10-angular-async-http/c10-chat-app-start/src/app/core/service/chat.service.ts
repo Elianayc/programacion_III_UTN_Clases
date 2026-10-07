@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { map, Observable, of, tap } from 'rxjs';
+import { map, Observable, of, tap, throwError } from 'rxjs';
 import { Conversation } from '../model/conversation.interface';
 import { Message } from '../model/message.interface';
 import { MessageRole } from '../model/message-role.enum';
+import { CreateMessageResponse } from '../model/create-message-response.interface';
 import { ChatApiService } from './chat-api.service';
 
 @Injectable({
@@ -166,35 +167,31 @@ export class ChatService {
     }
   }
 
-  sendDraftMessage(): boolean {
+  sendDraftMessage(): Observable<CreateMessageResponse> {
     const activeConversation = this.getActiveConversation();
     const normalizedDraft = this.draftMessage.trim();
 
     if (!activeConversation || !normalizedDraft) {
-      return false;
+      // Return an async error so the component handles it in subscribe(error).
+      return throwError(
+        () => new Error('Message cannot be empty or sent without an active conversation.'),
+      );
     }
 
-    const conversationId = activeConversation.id;
-    const conversationMessages = this.messagesByConversationId[conversationId] || [];
+    return this.chatApiService.createMessage(activeConversation.id, normalizedDraft).pipe(
+      tap((response) => {
+        const conversationMessages = this.messagesByConversationId[response.conversationId] || [];
 
-    if (!this.messagesByConversationId[conversationId]) {
-      this.messagesByConversationId[conversationId] = conversationMessages;
-    }
+        if (!this.messagesByConversationId[response.conversationId]) {
+          this.messagesByConversationId[response.conversationId] = conversationMessages;
+        }
 
-    conversationMessages.push({
-      id: `m-user-${Date.now()}`,
-      role: MessageRole.USER,
-      content: normalizedDraft,
-    });
+        conversationMessages.push(response.userMessage);
+        conversationMessages.push(response.assistantMessage);
 
-    conversationMessages.push({
-      id: `m-assistant-${Date.now() + 1}`,
-      role: MessageRole.ASSISTANT,
-      content: `Local reply: I received "${normalizedDraft}".`,
-    });
-
-    this.draftMessage = '';
-    return true;
+        this.draftMessage = '';
+      }),
+    );
   }
 
   ensureSelectedConversation(): void {
