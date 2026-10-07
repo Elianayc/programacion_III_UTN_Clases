@@ -7,7 +7,46 @@ import { MockBackendService } from './mock-backend.service';
   providedIn: 'root',
 })
 export class ChatService {
-  constructor(private readonly mockBackendService: MockBackendService) {}
+  private selectedConversationId: string | null = null;
+  private conversationFilter = '';
+  private draftMessage = '';
+
+  constructor(private readonly mockBackendService: MockBackendService) {
+    this.ensureSelectedConversation();
+  }
+
+  getConversationFilter(): string {
+    return this.conversationFilter;
+  }
+
+  setConversationFilter(value: string): void {
+    this.conversationFilter = value;
+
+    if (!this.selectedConversationId) {
+      return;
+    }
+
+    const filteredConversations = this.getFilteredConversations();
+    const selectedConversationVisible = filteredConversations.some(
+      (conversation) => conversation.id === this.selectedConversationId,
+    );
+
+    if (!selectedConversationVisible) {
+      this.selectedConversationId = filteredConversations[0]?.id || null;
+    }
+  }
+
+  getDraftMessage(): string {
+    return this.draftMessage;
+  }
+
+  setDraftMessage(value: string): void {
+    this.draftMessage = value;
+  }
+
+  getSelectedConversationId(): string | null {
+    return this.selectedConversationId;
+  }
 
   getConversations(): Conversation[] {
     return this.mockBackendService.listConversations();
@@ -17,8 +56,8 @@ export class ChatService {
     return this.getConversations().filter((conversation) => !conversation.archived);
   }
 
-  getFilteredConversations(conversationFilter: string): Conversation[] {
-    const normalizedFilter = conversationFilter.trim().toLowerCase();
+  getFilteredConversations(): Conversation[] {
+    const normalizedFilter = this.conversationFilter.trim().toLowerCase();
 
     if (!normalizedFilter) {
       return this.getVisibleConversations();
@@ -29,65 +68,72 @@ export class ChatService {
     );
   }
 
-  getActiveConversation(selectedConversationId: string | null): Conversation | null {
-    if (!selectedConversationId) {
+  getActiveConversation(): Conversation | null {
+    if (!this.selectedConversationId) {
       return null;
     }
 
     return (
       this.getConversations().find(
-        (conversation) => conversation.id === selectedConversationId && !conversation.archived,
+        (conversation) => conversation.id === this.selectedConversationId && !conversation.archived,
       ) || null
     );
   }
 
-  getActiveConversationTitle(selectedConversationId: string | null): string {
-    return this.getActiveConversation(selectedConversationId)?.title || 'No conversation selected';
+  getActiveConversationTitle(): string {
+    return this.getActiveConversation()?.title || 'No conversation selected';
   }
 
-  getVisibleMessages(selectedConversationId: string | null): Message[] {
-    return this.getActiveConversation(selectedConversationId)?.messages || [];
+  getVisibleMessages(): Message[] {
+    return this.getActiveConversation()?.messages || [];
   }
 
-  createNewConversation(): Conversation {
+  selectConversation(conversationId: string): void {
+    this.selectedConversationId = conversationId;
+  }
+
+  createNewConversation(): void {
     const nextConversationIndex = this.getConversations().length + 1;
-    return this.mockBackendService.createConversation(`New conversation ${nextConversationIndex}`);
+    const newConversation = this.mockBackendService.createConversation(
+      `New conversation ${nextConversationIndex}`,
+    );
+
+    this.selectedConversationId = newConversation.id;
+    this.conversationFilter = '';
+    this.draftMessage = '';
   }
 
   archiveConversation(conversationId: string): void {
     this.mockBackendService.archiveConversation(conversationId);
+
+    if (this.selectedConversationId === conversationId) {
+      this.selectedConversationId = this.getFilteredConversations()[0]?.id || null;
+    }
   }
 
-  sendMessage(selectedConversationId: string | null, draftMessage: string): boolean {
-    const activeConversation = this.getActiveConversation(selectedConversationId);
-    const normalizedDraft = draftMessage.trim();
+  sendDraftMessage(): boolean {
+    const activeConversation = this.getActiveConversation();
+    const normalizedDraft = this.draftMessage.trim();
 
     if (!activeConversation || !normalizedDraft) {
       return false;
     }
 
     const result = this.mockBackendService.createMessage(activeConversation.id, normalizedDraft);
-    return !!result;
+
+    if (!result) {
+      return false;
+    }
+
+    this.draftMessage = '';
+    return true;
   }
 
-  ensureSelectedConversation(
-    selectedConversationId: string | null,
-    conversationFilter: string,
-  ): string | null {
-    const filteredConversations = this.getFilteredConversations(conversationFilter);
-
-    if (!selectedConversationId) {
-      return filteredConversations[0]?.id || null;
+  ensureSelectedConversation(): void {
+    if (this.selectedConversationId) {
+      return;
     }
 
-    const selectedConversationVisible = filteredConversations.some(
-      (conversation) => conversation.id === selectedConversationId,
-    );
-
-    if (!selectedConversationVisible) {
-      return filteredConversations[0]?.id || null;
-    }
-
-    return selectedConversationId;
+    this.selectedConversationId = this.getVisibleConversations()[0]?.id || null;
   }
 }

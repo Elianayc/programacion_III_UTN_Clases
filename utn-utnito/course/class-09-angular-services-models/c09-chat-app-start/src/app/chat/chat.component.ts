@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../core/service/auth.service';
+import { ChatService } from '../core/service/chat.service';
 import { Conversation } from '../core/model/conversation.interface';
 import { Message } from '../core/model/message.interface';
 import { MessageRole } from '../core/model/message-role.enum';
-import { AuthService } from '../core/service/auth.service';
-import { ChatService } from '../core/service/chat.service';
 
 @Component({
   selector: 'app-chat',
@@ -13,11 +13,7 @@ import { ChatService } from '../core/service/chat.service';
   standalone: false,
 })
 export class ChatComponent implements OnInit {
-  protected readonly messageRole = MessageRole;
-
-  selectedConversationId: string | null = null;
-  conversationFilter = '';
-  draftMessage = '';
+  readonly messageRole = MessageRole;
 
   constructor(
     private readonly router: Router,
@@ -31,7 +27,7 @@ export class ChatComponent implements OnInit {
       return;
     }
 
-    this.syncSelectedConversation();
+    this.chatService.ensureSelectedConversation();
   }
 
   get displayName(): string {
@@ -42,65 +38,62 @@ export class ChatComponent implements OnInit {
     return this.authService.getInitials();
   }
 
+  get selectedConversationId(): string | null {
+    return this.chatService.getSelectedConversationId();
+  }
+
+  get conversationFilter(): string {
+    return this.chatService.getConversationFilter();
+  }
+
+  get draftMessage(): string {
+    return this.chatService.getDraftMessage();
+  }
+
   get filteredConversations(): Conversation[] {
-    return this.chatService.getFilteredConversations(this.conversationFilter);
+    return this.chatService.getFilteredConversations();
   }
 
   get activeConversation(): Conversation | null {
-    return this.chatService.getActiveConversation(this.selectedConversationId);
+    return this.chatService.getActiveConversation();
   }
 
   get activeConversationTitle(): string {
-    return this.chatService.getActiveConversationTitle(this.selectedConversationId);
+    return this.chatService.getActiveConversationTitle();
   }
 
   get visibleMessages(): Message[] {
-    return this.chatService.getVisibleMessages(this.selectedConversationId);
+    return this.chatService.getVisibleMessages();
   }
 
   selectConversation(conversationId: string): void {
-    this.selectedConversationId = conversationId;
+    this.chatService.selectConversation(conversationId);
   }
 
   createNewConversation(): void {
-    const newConversation = this.chatService.createNewConversation();
-    this.selectedConversationId = newConversation.id;
-    this.conversationFilter = '';
-    this.draftMessage = '';
+    this.chatService.createNewConversation();
   }
 
   archiveConversation(conversationId: string, event: MouseEvent): void {
     event.stopPropagation();
     this.chatService.archiveConversation(conversationId);
-    this.syncSelectedConversation();
   }
 
   onConversationFilterInput(value: string): void {
-    this.conversationFilter = value;
-    this.syncSelectedConversation();
+    this.chatService.setConversationFilter(value);
   }
 
   onDraftInput(value: string): void {
-    this.draftMessage = value;
+    this.chatService.setDraftMessage(value);
   }
 
   sendMessage(event: Event): void {
     event.preventDefault();
-    const messageSent = this.chatService.sendMessage(this.selectedConversationId, this.draftMessage);
-    if (messageSent) {
-      this.draftMessage = '';
-    }
+    this.chatService.sendDraftMessage();
   }
 
   onLogoutClick(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
-  }
-
-  private syncSelectedConversation(): void {
-    this.selectedConversationId = this.chatService.ensureSelectedConversation(
-      this.selectedConversationId,
-      this.conversationFilter,
-    );
   }
 }
