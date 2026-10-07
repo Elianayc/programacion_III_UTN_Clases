@@ -73,8 +73,8 @@
       <article
         class="message"
         *ngFor="let message of visibleMessages"
-        [class.assistant]="message.role === 'assistant'"
-        [class.user]="message.role === 'user'"
+        [class.assistant]="message.role === messageRole.ASSISTANT"
+        [class.user]="message.role === messageRole.USER"
       >
         <p>{{ message.content }}</p>
       </article>

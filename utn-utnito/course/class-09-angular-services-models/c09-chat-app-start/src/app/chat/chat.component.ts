@@ -1,20 +1,8 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-
-type MessageRole = 'assistant' | 'user';
-
-interface ChatMessage {
-  id: string;
-  role: MessageRole;
-  content: string;
-}
-
-interface ChatConversation {
-  id: string;
-  title: string;
-  archived: boolean;
-  messages: ChatMessage[];
-}
+import { Conversation } from '../core/model/conversation.interface';
+import { Message } from '../core/model/message.interface';
+import { MessageRole } from '../core/model/message-role.enum';
 
 @Component({
   selector: 'app-chat',
@@ -23,24 +11,25 @@ interface ChatConversation {
   standalone: false,
 })
 export class ChatComponent {
+  protected readonly messageRole = MessageRole;
   readonly displayName = 'Carlos Gardel';
   readonly initials = 'CG';
 
-  conversations: ChatConversation[] = [
+  conversations: Conversation[] = [
     {
       id: 'conv-1',
       title: 'Final project planning',
       archived: false,
       messages: [
-        { id: 'm-1', role: 'assistant', content: 'Hi! Ready to review today\'s class goals?' },
-        { id: 'm-2', role: 'user', content: 'Yes, show me the checkpoint for class 8.' },
+        { id: 'm-1', role: MessageRole.ASSISTANT, content: 'Hi! Ready to review today\'s class goals?' },
+        { id: 'm-2', role: MessageRole.USER, content: 'Yes, show me the checkpoint for class 8.' },
       ],
     },
     {
       id: 'conv-2',
       title: 'REST endpoint questions',
       archived: false,
-      messages: [{ id: 'm-3', role: 'assistant', content: 'Ask me anything about API design.' }],
+      messages: [{ id: 'm-3', role: MessageRole.ASSISTANT, content: 'Ask me anything about API design.' }],
     },
     {
       id: 'conv-3',
@@ -58,11 +47,11 @@ export class ChatComponent {
 
   constructor(private readonly router: Router) {}
 
-  get visibleConversations(): ChatConversation[] {
+  get visibleConversations(): Conversation[] {
     return this.conversations.filter((conversation) => !conversation.archived);
   }
 
-  get filteredConversations(): ChatConversation[] {
+  get filteredConversations(): Conversation[] {
     const normalizedFilter = this.conversationFilter.trim().toLowerCase();
 
     if (!normalizedFilter) {
@@ -74,7 +63,7 @@ export class ChatComponent {
     );
   }
 
-  get activeConversation(): ChatConversation | null {
+  get activeConversation(): Conversation | null {
     if (!this.selectedConversationId) {
       return null;
     }
@@ -88,7 +77,7 @@ export class ChatComponent {
     return this.activeConversation?.title || 'No conversation selected';
   }
 
-  get visibleMessages(): ChatMessage[] {
+  get visibleMessages(): Message[] {
     return this.activeConversation?.messages || [];
   }
 
@@ -98,21 +87,21 @@ export class ChatComponent {
 
   createNewConversation(): void {
     const nextConversationIndex = this.conversationCounter + 1;
-    const newConversationId = this.buildConversationId();
 
-    const newConversation: ChatConversation = {
-      id: newConversationId,
+    const newConversation: Conversation = {
+      id: this.buildConversationId(),
       title: `New conversation ${nextConversationIndex}`,
       archived: false,
       messages: [
         {
           id: this.buildMessageId(),
-          role: 'assistant',
+          role: MessageRole.ASSISTANT,
           content: 'New chat created. Ask me anything.',
         },
       ],
     };
 
+    // unshift adds at the beginning of the list; push adds at the end.
     this.conversations.unshift(newConversation);
     this.selectedConversationId = newConversation.id;
     this.conversationFilter = '';
@@ -142,7 +131,6 @@ export class ChatComponent {
     }
 
     const filteredConversations = this.filteredConversations;
-    // some(...) returns true if at least one filtered conversation matches the selected id.
     const selectedConversationVisible = filteredConversations.some(
       (conversation) => conversation.id === this.selectedConversationId,
     );
@@ -168,13 +156,13 @@ export class ChatComponent {
 
     activeConversation.messages.push({
       id: this.buildMessageId(),
-      role: 'user',
+      role: MessageRole.USER,
       content: normalizedDraft,
     });
 
     activeConversation.messages.push({
       id: this.buildMessageId(),
-      role: 'assistant',
+      role: MessageRole.ASSISTANT,
       content: `Mock reply: I received "${normalizedDraft}".`,
     });
 
