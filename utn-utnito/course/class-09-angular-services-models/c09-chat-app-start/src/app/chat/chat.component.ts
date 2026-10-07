@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Conversation } from '../core/model/conversation.interface';
 import { Message } from '../core/model/message.interface';
 import { MessageRole } from '../core/model/message-role.enum';
+import { ChatService } from '../core/service/chat.service';
 
 @Component({
   selector: 'app-chat',
@@ -15,70 +16,31 @@ export class ChatComponent {
   readonly displayName = 'Carlos Gardel';
   readonly initials = 'CG';
 
-  conversations: Conversation[] = [
-    {
-      id: 'conv-1',
-      title: 'Final project planning',
-      archived: false,
-      messages: [
-        { id: 'm-1', role: MessageRole.ASSISTANT, content: 'Hi! Ready to review today\'s class goals?' },
-        { id: 'm-2', role: MessageRole.USER, content: 'Yes, show me the checkpoint for class 8.' },
-      ],
-    },
-    {
-      id: 'conv-2',
-      title: 'REST endpoint questions',
-      archived: false,
-      messages: [{ id: 'm-3', role: MessageRole.ASSISTANT, content: 'Ask me anything about API design.' }],
-    },
-    {
-      id: 'conv-3',
-      title: 'Docker setup help',
-      archived: false,
-      messages: [],
-    },
-  ];
-
-  selectedConversationId: string | null = 'conv-1';
+  selectedConversationId: string | null = null;
   conversationFilter = '';
   draftMessage = '';
-  messageCounter = 3;
-  conversationCounter = 3;
 
-  constructor(private readonly router: Router) {}
-
-  get visibleConversations(): Conversation[] {
-    return this.conversations.filter((conversation) => !conversation.archived);
+  constructor(
+    private readonly router: Router,
+    private readonly chatService: ChatService,
+  ) {
+    this.syncSelectedConversation();
   }
 
   get filteredConversations(): Conversation[] {
-    const normalizedFilter = this.conversationFilter.trim().toLowerCase();
-
-    if (!normalizedFilter) {
-      return this.visibleConversations;
-    }
-
-    return this.visibleConversations.filter((conversation) =>
-      conversation.title.toLowerCase().includes(normalizedFilter),
-    );
+    return this.chatService.getFilteredConversations(this.conversationFilter);
   }
 
   get activeConversation(): Conversation | null {
-    if (!this.selectedConversationId) {
-      return null;
-    }
-
-    return this.conversations.find(
-      (conversation) => conversation.id === this.selectedConversationId && !conversation.archived,
-    ) || null;
+    return this.chatService.getActiveConversation(this.selectedConversationId);
   }
 
   get activeConversationTitle(): string {
-    return this.activeConversation?.title || 'No conversation selected';
+    return this.chatService.getActiveConversationTitle(this.selectedConversationId);
   }
 
   get visibleMessages(): Message[] {
-    return this.activeConversation?.messages || [];
+    return this.chatService.getVisibleMessages(this.selectedConversationId);
   }
 
   selectConversation(conversationId: string): void {
@@ -86,23 +48,7 @@ export class ChatComponent {
   }
 
   createNewConversation(): void {
-    const nextConversationIndex = this.conversationCounter + 1;
-
-    const newConversation: Conversation = {
-      id: this.buildConversationId(),
-      title: `New conversation ${nextConversationIndex}`,
-      archived: false,
-      messages: [
-        {
-          id: this.buildMessageId(),
-          role: MessageRole.ASSISTANT,
-          content: 'New chat created. Ask me anything.',
-        },
-      ],
-    };
-
-    // unshift adds at the beginning of the list; push adds at the end.
-    this.conversations.unshift(newConversation);
+    const newConversation = this.chatService.createNewConversation();
     this.selectedConversationId = newConversation.id;
     this.conversationFilter = '';
     this.draftMessage = '';
@@ -110,34 +56,13 @@ export class ChatComponent {
 
   archiveConversation(conversationId: string, event: MouseEvent): void {
     event.stopPropagation();
-
-    const conversation = this.conversations.find((item) => item.id === conversationId && !item.archived);
-    if (!conversation) {
-      return;
-    }
-
-    conversation.archived = true;
-
-    if (this.selectedConversationId === conversationId) {
-      this.selectedConversationId = this.filteredConversations[0]?.id || null;
-    }
+    this.chatService.archiveConversation(conversationId);
+    this.syncSelectedConversation();
   }
 
   onConversationFilterInput(value: string): void {
     this.conversationFilter = value;
-
-    if (!this.selectedConversationId) {
-      return;
-    }
-
-    const filteredConversations = this.filteredConversations;
-    const selectedConversationVisible = filteredConversations.some(
-      (conversation) => conversation.id === this.selectedConversationId,
-    );
-
-    if (!selectedConversationVisible) {
-      this.selectedConversationId = filteredConversations[0]?.id || null;
-    }
+    this.syncSelectedConversation();
   }
 
   onDraftInput(value: string): void {
@@ -146,40 +71,20 @@ export class ChatComponent {
 
   sendMessage(event: Event): void {
     event.preventDefault();
-
-    const activeConversation = this.activeConversation;
-    const normalizedDraft = this.draftMessage.trim();
-
-    if (!activeConversation || !normalizedDraft) {
-      return;
+    const messageSent = this.chatService.sendMessage(this.selectedConversationId, this.draftMessage);
+    if (messageSent) {
+      this.draftMessage = '';
     }
-
-    activeConversation.messages.push({
-      id: this.buildMessageId(),
-      role: MessageRole.USER,
-      content: normalizedDraft,
-    });
-
-    activeConversation.messages.push({
-      id: this.buildMessageId(),
-      role: MessageRole.ASSISTANT,
-      content: `Mock reply: I received "${normalizedDraft}".`,
-    });
-
-    this.draftMessage = '';
   }
 
   onLogoutClick(): void {
     this.router.navigate(['/login']);
   }
 
-  private buildConversationId(): string {
-    this.conversationCounter += 1;
-    return `conv-${this.conversationCounter}`;
-  }
-
-  private buildMessageId(): string {
-    this.messageCounter += 1;
-    return `m-${this.messageCounter}`;
+  private syncSelectedConversation(): void {
+    this.selectedConversationId = this.chatService.ensureSelectedConversation(
+      this.selectedConversationId,
+      this.conversationFilter,
+    );
   }
 }
