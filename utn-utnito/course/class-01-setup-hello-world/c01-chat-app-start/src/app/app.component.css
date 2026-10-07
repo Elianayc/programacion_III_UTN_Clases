@@ -1,23 +1,118 @@
-.class-screen {
+/*
+  Clase principal aplicada al elemento:
+  <main class="hello-screen">
+
+  Define el diseño general de la pantalla Hello UTNito.
+*/
+.hello-screen {
+
+  /* Altura mínima del contenedor. 100vh es el 100% del alto visible del navegador. */
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 0.75rem;
-  text-align: center;
+
+  /* Nuevo: reemplaza Flexbox por CSS Grid para organizar el contenido. */
+  display: grid;
+
+  /* Nuevo: centra el contenido horizontal y verticalmente. */
+  place-items: center;
+
+  /* Elimina el margen por defecto del navegador. */
+  margin: 0;
+
+  /* Nuevo: agrega espacio interno para evitar que el contenido toque los bordes. */
+  padding: 1rem;
+
+  /* Nuevo: fondo con degradado radial. */
+  background: radial-gradient(circle at top, #f5f0f2 0%, #eceaf1 55%, #e2e4ee 100%);
+
+  /* Define la familia de fuentes que se utilizará. */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #222;
-  background: #f6f7fb;
 }
 
-.class-screen h1 {
-  margin: 0;
-  font-size: 2rem;
+
+/*
+  Nueva clase.
+  Contiene el contenido principal dentro de una tarjeta visual.
+*/
+.hello-card {
+
+  /* Limita el ancho de la tarjeta según el tamaño de la pantalla. */
+  width: min(560px, 92vw);
+
+  /* Define el borde de la tarjeta. */
+  border: 1px solid #d3d5df;
+
+  /* Redondea las esquinas de la tarjeta. */
+  border-radius: 1rem;
+
+  /* Fondo blanco de la tarjeta. */
+  background: #ffffff;
+
+  /* Espacio interno entre el borde y el contenido. */
+  padding: 2rem;
+
+  /* Agrega una sombra para dar profundidad visual. */
+  box-shadow: 0 16px 40px rgba(43, 48, 61, 0.12);
+
+  /* Centra el texto dentro de la tarjeta. */
+  text-align: center;
 }
 
-.class-screen p {
+
+/*
+  Nueva clase.
+  Se utiliza para el texto superior "Programming III".
+*/
+.label {
+
+  /* Mantiene el margen superior en 0 y agrega separación inferior. */
+  margin: 0 0 0.5rem;
+
+  /* Define el tamaño del texto pequeño. */
+  font-size: 0.9rem;
+
+  /* Aumenta la separación entre letras. */
+  letter-spacing: 0.08em;
+
+  /* Convierte el texto a mayúsculas. */
+  text-transform: uppercase;
+
+  /* Define el color del texto. */
+  color: #8d4a5a;
+
+  /* Hace que la letra sea más gruesa. */
+  font-weight: 700;
+}
+
+
+/*
+  Cambio respecto al original:
+  antes era .class-screen h1 y ahora h1 se aplica directamente.
+*/
+h1 {
+
+  /* Elimina el margen que el navegador agrega por defecto. */
   margin: 0;
-  color: #5b6170;
+
+  /* Nuevo: tamaño adaptable según el ancho de pantalla. */
+  font-size: clamp(2rem, 5vw, 2.75rem);
+
+  /* Nuevo: color específico del título. */
+  color: #1f232c;
+}
+
+
+/*
+  Nueva clase.
+  Se utiliza para el texto descriptivo inferior.
+*/
+.subtitle {
+
+  /* Agrega separación respecto al título. */
+  margin: 0.75rem 0 0;
+
+  /* Color secundario para diferenciarlo del título. */
+  color: #586072;
+
+  /* Define el tamaño del texto. */
   font-size: 1rem;
 }
