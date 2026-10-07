@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { AuthUser } from '../model/auth-user.interface';
 import { Conversation } from '../model/conversation.interface';
 import { Message } from '../model/message.interface';
 import { MessageRole } from '../model/message-role.enum';
@@ -9,6 +10,15 @@ import { MessageRole } from '../model/message-role.enum';
 export class MockBackendService {
   private messageCounter = 3;
   private conversationCounter = 3;
+
+  private readonly authUsers: AuthUser[] = [
+    {
+      userId: 'user_carlos_gardel',
+      username: 'carlos.gardel',
+      displayName: 'Carlos Gardel',
+      role: 'STUDENT',
+    },
+  ];
 
   private conversations: Conversation[] = [
     {
@@ -33,6 +43,30 @@ export class MockBackendService {
       messages: [],
     },
   ];
+
+  authenticate(username: string, password: string): AuthUser | null {
+    const normalizedUsername = username.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+
+    if (!normalizedUsername || !normalizedPassword) {
+      return null;
+    }
+
+    // For course practice we accept the mock student credentials used across demos.
+    const mockPassword = '123456';
+    const user = this.authUsers.find((item) => item.username.toLowerCase() === normalizedUsername);
+
+    if (!user || normalizedPassword !== mockPassword) {
+      return null;
+    }
+
+    return { ...user };
+  }
+
+  getUserById(userId: string): AuthUser | null {
+    const user = this.authUsers.find((item) => item.userId === userId);
+    return user ? { ...user } : null;
+  }
 
   listConversations(): Conversation[] {
     return this.conversations;

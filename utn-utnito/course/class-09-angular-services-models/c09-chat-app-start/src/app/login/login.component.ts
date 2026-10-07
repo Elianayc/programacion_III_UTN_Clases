@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../core/service/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -8,7 +9,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./login.component.css'],
   standalone: false,
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   submitted = false;
   formMessage = '';
@@ -16,11 +17,18 @@ export class LoginComponent {
   constructor(
     private readonly formBuilder: FormBuilder,
     private readonly router: Router,
+    private readonly authService: AuthService,
   ) {
     this.loginForm = this.formBuilder.group({
-      username: ['', [Validators.required, Validators.minLength(3)]],
-      password: ['', [Validators.required, Validators.minLength(1)]],
+      username: ['carlos.gardel', [Validators.required, Validators.minLength(3)]],
+      password: ['123456', [Validators.required, Validators.minLength(1)]],
     });
+  }
+
+  ngOnInit(): void {
+    if (this.authService.isLoggedIn()) {
+      this.router.navigate(['/chat']);
+    }
   }
 
   get usernameControl() {
@@ -50,6 +58,16 @@ export class LoginComponent {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       this.formMessage = 'Complete valid credentials to continue.';
+      return;
+    }
+
+    const username = this.loginForm.get('username')?.value?.trim() as string;
+    const password = this.loginForm.get('password')?.value as string;
+
+    const loginOk = this.authService.login(username, password);
+
+    if (!loginOk) {
+      this.formMessage = 'Invalid credentials for mock backend.';
       return;
     }
 
