@@ -27,7 +27,12 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "**/*",
+                "input": "backend_mock",
+                "output": "backend_mock"
+              }
             ],
             "styles": [
               "src/styles.css"
