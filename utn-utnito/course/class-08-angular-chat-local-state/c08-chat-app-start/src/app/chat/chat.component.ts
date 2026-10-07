@@ -51,6 +51,7 @@ export class ChatComponent {
   ];
 
   selectedConversationId: string | null = 'conv-1';
+  conversationFilter = '';
   draftMessage = '';
   messageCounter = 3;
   conversationCounter = 3;
@@ -61,20 +62,26 @@ export class ChatComponent {
     return this.conversations.filter((conversation) => !conversation.archived);
   }
 
+  get filteredConversations(): ChatConversation[] {
+    const normalizedFilter = this.conversationFilter.trim().toLowerCase();
+
+    if (!normalizedFilter) {
+      return this.visibleConversations;
+    }
+
+    return this.visibleConversations.filter((conversation) =>
+      conversation.title.toLowerCase().includes(normalizedFilter),
+    );
+  }
+
   get activeConversation(): ChatConversation | null {
     if (!this.selectedConversationId) {
       return null;
     }
 
-    const activeConversation = this.conversations.find(
-      (conversation) => conversation.id === this.selectedConversationId,
-    );
-
-    if (!activeConversation || activeConversation.archived) {
-      return null;
-    }
-
-    return activeConversation;
+    return this.conversations.find(
+      (conversation) => conversation.id === this.selectedConversationId && !conversation.archived,
+    ) || null;
   }
 
   get activeConversationTitle(): string {
@@ -108,6 +115,7 @@ export class ChatComponent {
 
     this.conversations.unshift(newConversation);
     this.selectedConversationId = newConversation.id;
+    this.conversationFilter = '';
     this.draftMessage = '';
   }
 
@@ -122,7 +130,25 @@ export class ChatComponent {
     conversation.archived = true;
 
     if (this.selectedConversationId === conversationId) {
-      this.selectedConversationId = this.visibleConversations[0]?.id || null;
+      this.selectedConversationId = this.filteredConversations[0]?.id || null;
+    }
+  }
+
+  onConversationFilterInput(value: string): void {
+    this.conversationFilter = value;
+
+    if (!this.selectedConversationId) {
+      return;
+    }
+
+    const filteredConversations = this.filteredConversations;
+    // some(...) returns true if at least one filtered conversation matches the selected id.
+    const selectedConversationVisible = filteredConversations.some(
+      (conversation) => conversation.id === this.selectedConversationId,
+    );
+
+    if (!selectedConversationVisible) {
+      this.selectedConversationId = filteredConversations[0]?.id || null;
     }
   }
 

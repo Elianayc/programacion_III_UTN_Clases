@@ -34,6 +34,24 @@
   font-size: 12px;
 }
 
+.chat-filter-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #bcc2cf;
+  font-size: 12px;
+}
+
+.chat-filter-input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 9px 10px;
+  border: 1px solid #454a57;
+  border-radius: 10px;
+  background-color: #262b37;
+  color: #ececf1;
+  font-size: 14px;
+}
+
 .chat-list {
   margin: 0;
   padding: 0;

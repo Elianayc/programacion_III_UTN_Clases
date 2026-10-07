@@ -3,10 +3,22 @@
     <div class="sidebar-top">
       <button class="new-chat-btn" type="button" (click)="createNewConversation()">+ New chat</button>
       <p class="section-title">Your chats</p>
+
+      <label class="chat-filter-label" for="chat-filter">Filter chats</label>
+      <input
+        #chatFilterInput
+        id="chat-filter"
+        class="chat-filter-input"
+        type="search"
+        placeholder="Type to filter by title"
+        [value]="conversationFilter"
+        (input)="onConversationFilterInput(chatFilterInput.value)"
+      />
+
       <ul class="chat-list">
         <li
           class="chat-item"
-          *ngFor="let conversation of visibleConversations"
+          *ngFor="let conversation of filteredConversations"
           [class.active]="conversation.id === selectedConversationId"
         >
           <button class="chat-item-select" type="button" (click)="selectConversation(conversation.id)">
@@ -24,8 +36,8 @@
         </li>
       </ul>
 
-      <p class="empty-list" *ngIf="!visibleConversations.length">
-        No active chats available.
+      <p class="empty-list" *ngIf="!filteredConversations.length">
+        No chats match "{{ conversationFilter }}".
       </p>
     </div>
 
