@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
+import { Observable, of, tap, throwError } from 'rxjs';
 import { Conversation } from '../model/conversation.interface';
+import { CreateMessageResponse } from '../model/create-message-response.interface';
 import { Message } from '../model/message.interface';
-import { MockBackendService } from './mock-backend.service';
+import { ChatApiService } from './chat-api.service';
 
 @Injectable({
   providedIn: 'root',
@@ -11,9 +13,10 @@ export class ChatService {
   private conversationFilter = '';
   private draftMessage = '';
 
-  constructor(private readonly mockBackendService: MockBackendService) {
-    this.ensureSelectedConversation();
-  }
+  private conversations: Conversation[] = [];
+  private readonly messagesByConversationId: Record<string, Message[]> = {};
+
+  constructor(private readonly chatApiService: ChatApiService) {}
 
   getConversationFilter(): string {
     return this.conversationFilter;
@@ -49,7 +52,7 @@ export class ChatService {
   }
 
   getConversations(): Conversation[] {
-    return this.mockBackendService.listConversations();
+    return this.conversations;
   }
 
   getVisibleConversations(): Conversation[] {
@@ -85,7 +88,34 @@ export class ChatService {
   }
 
   getVisibleMessages(): Message[] {
-    return this.getActiveConversation()?.messages || [];
+    if (!this.selectedConversationId) {
+      return [];
+    }
+
+    return this.messagesByConversationId[this.selectedConversationId] || [];
+  }
+
+  loadConversations(): Observable<Conversation[]> {
+    return this.chatApiService.listConversations().pipe(
+      tap((conversations) => {
+        this.conversations = conversations;
+        this.ensureSelectedConversation();
+      }),
+    );
+  }
+
+  loadMessages(conversationId: string): Observable<Message[]> {
+    const cachedMessages = this.messagesByConversationId[conversationId];
+
+    if (cachedMessages) {
+      return of(cachedMessages);
+    }
+
+    return this.chatApiService.listMessages(conversationId).pipe(
+      tap((messages) => {
+        this.messagesByConversationId[conversationId] = messages;
+      }),
+    );
   }
 
   selectConversation(conversationId: string): void {
@@ -93,40 +123,37 @@ export class ChatService {
   }
 
   createNewConversation(): void {
-    const nextConversationIndex = this.getConversations().length + 1;
-    const newConversation = this.mockBackendService.createConversation(
-      `New conversation ${nextConversationIndex}`,
-    );
-
-    this.selectedConversationId = newConversation.id;
-    this.conversationFilter = '';
-    this.draftMessage = '';
+    console.info('Step 3: create conversation is integrated in step 4');
   }
 
-  archiveConversation(conversationId: string): void {
-    this.mockBackendService.archiveConversation(conversationId);
-
-    if (this.selectedConversationId === conversationId) {
-      this.selectedConversationId = this.getFilteredConversations()[0]?.id || null;
-    }
+  archiveConversation(_conversationId: string): void {
+    console.info('Step 3: archive conversation is integrated in step 4');
   }
 
-  sendDraftMessage(): boolean {
+  sendDraftMessage(): Observable<CreateMessageResponse> {
     const activeConversation = this.getActiveConversation();
     const normalizedDraft = this.draftMessage.trim();
 
     if (!activeConversation || !normalizedDraft) {
-      return false;
+      return throwError(
+        () => new Error('Message cannot be empty or sent without an active conversation.'),
+      );
     }
 
-    const result = this.mockBackendService.createMessage(activeConversation.id, normalizedDraft);
+    return this.chatApiService.createMessage(activeConversation.id, normalizedDraft).pipe(
+      tap((response) => {
+        const conversationMessages = this.messagesByConversationId[activeConversation.id] || [];
 
-    if (!result) {
-      return false;
-    }
+        if (!this.messagesByConversationId[activeConversation.id]) {
+          this.messagesByConversationId[activeConversation.id] = conversationMessages;
+        }
 
-    this.draftMessage = '';
-    return true;
+        conversationMessages.push(response.userMessage);
+        conversationMessages.push(response.assistantMessage);
+
+        this.draftMessage = '';
+      }),
+    );
   }
 
   ensureSelectedConversation(): void {

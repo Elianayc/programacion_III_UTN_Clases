@@ -27,7 +27,24 @@ export class ChatComponent implements OnInit {
       return;
     }
 
-    this.chatService.ensureSelectedConversation();
+    this.chatService.loadConversations().subscribe({
+      next: () => {
+        const selectedConversationId = this.chatService.getSelectedConversationId();
+
+        if (!selectedConversationId) {
+          return;
+        }
+
+        this.chatService.loadMessages(selectedConversationId).subscribe({
+          error: (error: unknown) => {
+            console.error('Load messages failed', error);
+          },
+        });
+      },
+      error: (error: unknown) => {
+        console.error('Load conversations failed', error);
+      },
+    });
   }
 
   get displayName(): string {
@@ -68,6 +85,12 @@ export class ChatComponent implements OnInit {
 
   selectConversation(conversationId: string): void {
     this.chatService.selectConversation(conversationId);
+
+    this.chatService.loadMessages(conversationId).subscribe({
+      error: (error: unknown) => {
+        console.error('Load messages failed', error);
+      },
+    });
   }
 
   createNewConversation(): void {
@@ -89,7 +112,11 @@ export class ChatComponent implements OnInit {
 
   sendMessage(event: Event): void {
     event.preventDefault();
-    this.chatService.sendDraftMessage();
+    this.chatService.sendDraftMessage().subscribe({
+      error: (error: unknown) => {
+        console.error('Send message failed', error);
+      },
+    });
   }
 
   onLogoutClick(): void {

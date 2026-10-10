@@ -1,7 +1,9 @@
 <div class="chat-layout">
   <aside class="sidebar">
     <div class="sidebar-top">
-      <button class="new-chat-btn" type="button" (click)="createNewConversation()">+ New chat</button>
+      <button class="new-chat-btn" type="button" [disabled]="true" title="Integrated in step 4">
+        + New chat
+      </button>
       <p class="section-title">Your chats</p>
 
       <label class="chat-filter-label" for="chat-filter">Filter chats</label>
@@ -29,6 +31,8 @@
             class="conversation-item-archive"
             type="button"
             aria-label="Archive conversation"
+            [disabled]="true"
+            title="Integrated in step 4"
             (click)="archiveConversation(conversation.id, $event)"
           >
             🗑
