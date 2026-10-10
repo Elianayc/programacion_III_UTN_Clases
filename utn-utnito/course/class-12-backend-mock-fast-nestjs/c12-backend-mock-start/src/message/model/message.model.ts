@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { AbstractBasicChatObject } from '../../basic/abstract-basic-chat-object.model';
 import { MessageRole } from './message-role.enum';
 
-export class MessageModel {
+export class MessageModel extends AbstractBasicChatObject {
   @ApiProperty({ example: 'msg-1' })
   messageId: string;
 
@@ -14,12 +15,6 @@ export class MessageModel {
   @ApiProperty({ example: 'Hello UTNito' })
   content: string;
 
-  @ApiProperty({ example: '2026-04-19T00:00:00.000Z' })
-  createdAt: string;
-
-  @ApiProperty({ example: '2026-04-19T00:00:00.000Z' })
-  updatedAt: string;
-
   constructor(
     messageId: string,
     conversationId: string,
@@ -28,11 +23,10 @@ export class MessageModel {
     createdAt: string,
     updatedAt: string,
   ) {
+    super(createdAt, updatedAt);
     this.messageId = messageId;
     this.conversationId = conversationId;
     this.role = role;
     this.content = content;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
   }
 }

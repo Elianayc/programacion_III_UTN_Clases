@@ -14,7 +14,7 @@ async function bootstrap() {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Class 12 - Backend Mock with NestJS')
-    .setDescription('Backend mock implementation over class 11 API contract')
+    .setDescription('Controller + Service + Module architecture over class 11 API contract')
     .setVersion('1.0.0')
     .build();
 

@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { AbstractBasicChatObject } from '../../basic/abstract-basic-chat-object.model';
 import { ConversationStatus } from './conversation-status.enum';
 
-export class ConversationModel {
+export class ConversationModel extends AbstractBasicChatObject {
   @ApiProperty({ example: 'conv-1' })
   conversationId: string;
 
@@ -11,12 +12,6 @@ export class ConversationModel {
   @ApiProperty({ enum: ConversationStatus, example: ConversationStatus.ACTIVE })
   status: ConversationStatus;
 
-  @ApiProperty({ example: '2026-04-19T00:00:00.000Z' })
-  createdAt: string;
-
-  @ApiProperty({ example: '2026-04-19T00:00:00.000Z' })
-  updatedAt: string;
-
   constructor(
     conversationId: string,
     title: string,
@@ -24,10 +19,9 @@ export class ConversationModel {
     createdAt: string,
     updatedAt: string,
   ) {
+    super(createdAt, updatedAt);
     this.conversationId = conversationId;
     this.title = title;
     this.status = status;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
   }
 }
