@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, tap, throwError } from 'rxjs';
+import { map, Observable, of, tap, throwError } from 'rxjs';
 import { Conversation } from '../model/conversation.interface';
 import { CreateMessageResponse } from '../model/create-message-response.interface';
 import { Message } from '../model/message.interface';
@@ -122,12 +122,50 @@ export class ChatService {
     this.selectedConversationId = conversationId;
   }
 
-  createNewConversation(): void {
-    console.info('Step 3: create conversation is integrated in step 4');
+  createNewConversation(): Observable<Conversation> {
+    const nextConversationIndex = this.getConversations().length + 1;
+
+    return this.chatApiService.createConversation(`New conversation ${nextConversationIndex}`).pipe(
+      tap((conversation) => {
+        this.conversations.unshift(conversation);
+        this.selectedConversationId = conversation.id;
+        this.messagesByConversationId[conversation.id] = [];
+        this.conversationFilter = '';
+        this.draftMessage = '';
+      }),
+    );
   }
 
-  archiveConversation(_conversationId: string): void {
-    console.info('Step 3: archive conversation is integrated in step 4');
+  activateConversation(conversationId: string): Observable<Conversation> {
+    return this.chatApiService.activateConversation(conversationId).pipe(
+      tap((activeConversation) => {
+        this.conversations = this.conversations.map((conversation) => {
+          if (conversation.id === activeConversation.id) {
+            return { ...conversation, archived: activeConversation.archived };
+          }
+
+          return conversation;
+        });
+      }),
+    );
+  }
+
+  archiveConversation(conversationId: string): Observable<Conversation> {
+    return this.chatApiService.archiveConversation(conversationId).pipe(
+      tap((archivedConversation) => {
+        this.conversations = this.conversations.map((conversation) => {
+          if (conversation.id !== archivedConversation.id) {
+            return conversation;
+          }
+
+          return { ...conversation, archived: true };
+        });
+
+        if (this.selectedConversationId === conversationId) {
+          this.selectedConversationId = this.getFilteredConversations()[0]?.id || null;
+        }
+      }),
+    );
   }
 
   sendDraftMessage(): Observable<CreateMessageResponse> {
@@ -162,5 +200,18 @@ export class ChatService {
     }
 
     this.selectedConversationId = this.getVisibleConversations()[0]?.id || null;
+  }
+
+  clearConversationCache(conversationId: string): void {
+    delete this.messagesByConversationId[conversationId];
+  }
+
+  preloadMessages(conversationId: string, messages: Message[]): void {
+    this.messagesByConversationId[conversationId] = messages;
+  }
+
+  reloadMessagesForConversation(conversationId: string): Observable<Message[]> {
+    this.clearConversationCache(conversationId);
+    return this.loadMessages(conversationId).pipe(map((messages) => messages));
   }
 }

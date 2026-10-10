@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable, throwError } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { Conversation } from '../model/conversation.interface';
 import { CreateMessageResponse } from '../model/create-message-response.interface';
 import { Message } from '../model/message.interface';
@@ -72,16 +72,40 @@ export class ChatApiService extends BaseApiService {
     );
   }
 
-  createConversation(_title: string): Observable<Conversation> {
-    return throwError(() => new Error('Step 3: implement in step 4'));
+  createConversation(title: string): Observable<Conversation> {
+    return this.post<BackendConversation>('conversations', { title }).pipe(
+      map((response) => {
+        if (!response.success) {
+          throw new Error(response.responseMessage?.message || 'Failed to create conversation');
+        }
+
+        return this.mapConversation(response.data);
+      }),
+    );
   }
 
-  activateConversation(_conversationId: string): Observable<Conversation> {
-    return throwError(() => new Error('Step 3: implement in step 4'));
+  activateConversation(conversationId: string): Observable<Conversation> {
+    return this.patch<BackendConversation>(`conversations/${conversationId}/activate`, {}).pipe(
+      map((response) => {
+        if (!response.success) {
+          throw new Error(response.responseMessage?.message || 'Failed to activate conversation');
+        }
+
+        return this.mapConversation(response.data);
+      }),
+    );
   }
 
-  archiveConversation(_conversationId: string): Observable<Conversation> {
-    return throwError(() => new Error('Step 3: implement in step 4'));
+  archiveConversation(conversationId: string): Observable<Conversation> {
+    return this.patch<BackendConversation>(`conversations/${conversationId}/archive`, {}).pipe(
+      map((response) => {
+        if (!response.success) {
+          throw new Error(response.responseMessage?.message || 'Failed to archive conversation');
+        }
+
+        return this.mapConversation(response.data);
+      }),
+    );
   }
 
   private mapConversation(conversation: BackendConversation): Conversation {

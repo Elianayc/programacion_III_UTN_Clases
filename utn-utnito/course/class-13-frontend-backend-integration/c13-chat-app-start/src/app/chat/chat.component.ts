@@ -84,22 +84,58 @@ export class ChatComponent implements OnInit {
   }
 
   selectConversation(conversationId: string): void {
-    this.chatService.selectConversation(conversationId);
+    this.chatService.activateConversation(conversationId).subscribe({
+      next: () => {
+        this.chatService.selectConversation(conversationId);
 
-    this.chatService.loadMessages(conversationId).subscribe({
+        this.chatService.loadMessages(conversationId).subscribe({
+          error: (error: unknown) => {
+            console.error('Load messages failed', error);
+          },
+        });
+      },
       error: (error: unknown) => {
-        console.error('Load messages failed', error);
+        console.error('Activate conversation failed', error);
       },
     });
   }
 
   createNewConversation(): void {
-    this.chatService.createNewConversation();
+    this.chatService.createNewConversation().subscribe({
+      next: (conversation) => {
+        this.chatService.loadMessages(conversation.id).subscribe({
+          error: (error: unknown) => {
+            console.error('Load messages failed', error);
+          },
+        });
+      },
+      error: (error: unknown) => {
+        console.error('Create conversation failed', error);
+      },
+    });
   }
 
   archiveConversation(conversationId: string, event: MouseEvent): void {
     event.stopPropagation();
-    this.chatService.archiveConversation(conversationId);
+
+    this.chatService.archiveConversation(conversationId).subscribe({
+      next: () => {
+        const selectedConversationId = this.chatService.getSelectedConversationId();
+
+        if (!selectedConversationId) {
+          return;
+        }
+
+        this.chatService.reloadMessagesForConversation(selectedConversationId).subscribe({
+          error: (error: unknown) => {
+            console.error('Reload messages failed', error);
+          },
+        });
+      },
+      error: (error: unknown) => {
+        console.error('Archive conversation failed', error);
+      },
+    });
   }
 
   onConversationFilterInput(value: string): void {
