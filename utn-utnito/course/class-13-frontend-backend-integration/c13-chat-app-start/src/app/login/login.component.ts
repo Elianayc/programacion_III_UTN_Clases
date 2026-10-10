@@ -64,13 +64,19 @@ export class LoginComponent implements OnInit {
     const username = this.loginForm.get('username')?.value?.trim() as string;
     const password = this.loginForm.get('password')?.value as string;
 
-    const loginOk = this.authService.login(username, password);
+    this.authService.login(username, password).subscribe({
+      next: (loginOk) => {
+        if (!loginOk) {
+          this.formMessage = 'Invalid credentials.';
+          return;
+        }
 
-    if (!loginOk) {
-      this.formMessage = 'Invalid credentials for mock backend.';
-      return;
-    }
-
-    this.router.navigate(['/chat']);
+        this.router.navigate(['/chat']);
+      },
+      error: (error: unknown) => {
+        console.error('Login request failed', error);
+        this.formMessage = 'Login request failed.';
+      },
+    });
   }
 }

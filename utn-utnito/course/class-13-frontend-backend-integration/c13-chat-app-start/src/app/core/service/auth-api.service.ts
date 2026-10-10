@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { AuthSession } from '../model/auth-session.interface';
 import { BaseApiService } from './base-api.service';
 
@@ -12,7 +12,15 @@ export class AuthApiService extends BaseApiService {
     super(http);
   }
 
-  login(_username: string, _password: string): Observable<AuthSession> {
-    return throwError(() => new Error('Step 1 skeleton: implement login in step 2'));
+  login(username: string, password: string): Observable<AuthSession> {
+    return this.post<AuthSession>('auth/login', { username, password }).pipe(
+      map((response) => {
+        if (!response.success) {
+          throw new Error(response.responseMessage?.message || 'Login failed');
+        }
+
+        return response.data;
+      }),
+    );
   }
 }

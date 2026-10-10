@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
+import { catchError, map, Observable, of } from 'rxjs';
 import { AuthUser } from '../model/auth-user.interface';
-import { MockBackendService } from './mock-backend.service';
+import { AuthApiService } from './auth-api.service';
 
 @Injectable({
   providedIn: 'root',
@@ -8,18 +9,19 @@ import { MockBackendService } from './mock-backend.service';
 export class AuthService {
   private currentUser: AuthUser | null = null;
 
-  constructor(private readonly mockBackendService: MockBackendService) {}
+  constructor(private readonly authApiService: AuthApiService) {}
 
-  login(username: string, password: string): boolean {
-    const user = this.mockBackendService.authenticate(username, password);
-
-    if (!user) {
-      this.currentUser = null;
-      return false;
-    }
-
-    this.currentUser = user;
-    return true;
+  login(username: string, password: string): Observable<boolean> {
+    return this.authApiService.login(username, password).pipe(
+      map((session) => {
+        this.currentUser = session.user;
+        return true;
+      }),
+      catchError(() => {
+        this.currentUser = null;
+        return of(false);
+      }),
+    );
   }
 
   logout(): void {
