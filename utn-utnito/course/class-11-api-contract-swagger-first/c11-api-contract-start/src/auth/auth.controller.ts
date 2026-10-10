@@ -1,14 +1,13 @@
 import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResponseMessage } from '../basic/response-message.model';
-import { ResponseObject } from '../basic/response-object.model';
+import { AbstractController } from '../basic/abstract.controller';
 import { AuthSessionModel } from './model/auth-session.model';
 import { AuthUserModel } from './model/auth-user.model';
 import { LoginRequest } from './request/login.request';
 
 @ApiTags('auth')
 @Controller('auth')
-export class AuthController {
+export class AuthController extends AbstractController {
   private readonly validUsername = 'carlos.gardel';
   private readonly validPassword = '123456';
 
@@ -16,7 +15,7 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ summary: 'Login contract endpoint' })
   @ApiBody({ type: LoginRequest })
-  login(@Body() request: LoginRequest): ResponseObject<AuthSessionModel> {
+  login(@Body() request: LoginRequest) {
     const username = request.username?.trim().toLowerCase();
     const password = request.password?.trim();
 
@@ -36,11 +35,6 @@ export class AuthController {
       user,
     };
 
-    return new ResponseObject(
-      true,
-      new ResponseMessage('0000', 'Login successful'),
-      new Date().toISOString(),
-      session,
-    );
+    return this.createOkResponseWithMessage(session, 'Login successful');
   }
 }

@@ -1,13 +1,13 @@
 import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResponseObject } from '../basic/response-object.model';
+import { AbstractController } from '../basic/abstract.controller';
 import { MessageModel } from './model/message.model';
 import { MessageRole } from './model/message-role.enum';
 import { CreateMessageRequest } from './request/create-message.request';
 
 @ApiTags('messages')
 @Controller('conversations/:conversationId/messages')
-export class MessageController {
+export class MessageController extends AbstractController {
   private messageCounter = 4;
 
   private messages: MessageModel[] = [
@@ -44,18 +44,10 @@ export class MessageController {
   /** Returns messages belonging to one conversation id. */
   @Get()
   @ApiOperation({ summary: 'List messages of one conversation' })
-  listMessages(@Param('conversationId') conversationId: string): ResponseObject<MessageModel[]> {
+  listMessages(@Param('conversationId') conversationId: string) {
     const conversationMessages = this.messages.filter((item) => item.conversationId === conversationId);
 
-    return {
-      success: true,
-      responseMessage: {
-        messageCode: '0000',
-        message: 'Messages listed',
-      },
-      serverTime: new Date().toISOString(),
-      data: conversationMessages,
-    };
+    return this.createOkResponseWithMessage(conversationMessages, 'Messages listed');
   }
 
   /** Creates a user message and a mock assistant reply. */
@@ -65,7 +57,7 @@ export class MessageController {
   createMessage(
     @Param('conversationId') conversationId: string,
     @Body() request: CreateMessageRequest,
-  ): ResponseObject<{ userMessage: MessageModel; assistantMessage: MessageModel }> {
+  ) {
     if (!request.content?.trim()) {
       throw new BadRequestException('Message content is required');
     }
@@ -93,24 +85,19 @@ export class MessageController {
     this.messages.push(userMessage);
     this.messages.push(assistantMessage);
 
-    return {
-      success: true,
-      responseMessage: {
-        messageCode: '0000',
-        message: 'Message flow simulated',
-      },
-      serverTime: new Date().toISOString(),
-      data: {
+    return this.createOkResponseWithMessage(
+      {
         userMessage,
         assistantMessage,
       },
-    };
+      'Message flow simulated',
+    );
   }
 
   /** Deletes one message by id. */
   @Delete(':messageId')
   @ApiOperation({ summary: 'Delete one message' })
-  deleteMessage(@Param('messageId') messageId: string): ResponseObject<{ deletedMessageId: string }> {
+  deleteMessage(@Param('messageId') messageId: string) {
     const previousLength = this.messages.length;
 
     this.messages = this.messages.filter((item) => item.messageId !== messageId);
@@ -119,16 +106,11 @@ export class MessageController {
       throw new NotFoundException('Message not found');
     }
 
-    return {
-      success: true,
-      responseMessage: {
-        messageCode: '0000',
-        message: 'Message deleted',
-      },
-      serverTime: new Date().toISOString(),
-      data: {
+    return this.createOkResponseWithMessage(
+      {
         deletedMessageId: messageId,
       },
-    };
+      'Message deleted',
+    );
   }
 }

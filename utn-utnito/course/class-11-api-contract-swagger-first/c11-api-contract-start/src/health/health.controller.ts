@@ -1,23 +1,20 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResponseMessage } from '../basic/response-message.model';
-import { ResponseObject } from '../basic/response-object.model';
+import { AbstractController } from '../basic/abstract.controller';
 
 @ApiTags('health')
 @Controller('health')
-export class HealthController {
+export class HealthController extends AbstractController {
   /** Returns a simple health check response for the API. */
   @Get()
   @ApiOperation({ summary: 'Health check for class 11 backend' })
-  getHealth(): ResponseObject<{ service: string; status: string }> {
-    return new ResponseObject(
-      true,
-      new ResponseMessage('0000', 'Health check OK'),
-      new Date().toISOString(),
+  getHealth() {
+    return this.createOkResponseWithMessage(
       {
         service: 'class-11-api-contract',
         status: 'UP',
       },
+      'Health check OK',
     );
   }
 }

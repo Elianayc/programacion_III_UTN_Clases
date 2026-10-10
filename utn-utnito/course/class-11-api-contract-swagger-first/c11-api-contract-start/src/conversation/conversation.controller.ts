@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Patch, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResponseObject } from '../basic/response-object.model';
+import { AbstractController } from '../basic/abstract.controller';
 import { ConversationModel } from './model/conversation.model';
 import { ConversationStatus } from './model/conversation-status.enum';
 import { CreateConversationRequest } from './request/create-conversation.request';
@@ -8,7 +8,7 @@ import { UpdateConversationTitleRequest } from './request/update-conversation-ti
 
 @ApiTags('conversations')
 @Controller('conversations')
-export class ConversationController {
+export class ConversationController extends AbstractController {
   private conversationCounter = 3;
 
   private conversations: ConversationModel[] = [
@@ -38,16 +38,8 @@ export class ConversationController {
     summary: 'List conversation contracts',
     description: 'Returns all conversations with current status and updatedAt values.',
   })
-  listConversations(): ResponseObject<ConversationModel[]> {
-    return {
-      success: true,
-      responseMessage: {
-        messageCode: '0000',
-        message: 'Conversations listed',
-      },
-      serverTime: new Date().toISOString(),
-      data: this.conversations,
-    };
+  listConversations() {
+    return this.createOkResponseWithMessage(this.conversations, 'Conversations listed');
   }
 
   /** Returns one conversation by id. */
@@ -56,22 +48,14 @@ export class ConversationController {
     summary: 'Get one conversation by id',
     description: 'Loads one conversation. Throws 404 when the id does not exist.',
   })
-  getConversation(@Param('conversationId') conversationId: string): ResponseObject<ConversationModel> {
+  getConversation(@Param('conversationId') conversationId: string) {
     const conversation = this.conversations.find((item) => item.conversationId === conversationId);
 
     if (!conversation) {
       throw new NotFoundException('Conversation not found');
     }
 
-    return {
-      success: true,
-      responseMessage: {
-        messageCode: '0000',
-        message: 'Conversation loaded',
-      },
-      serverTime: new Date().toISOString(),
-      data: conversation,
-    };
+    return this.createOkResponseWithMessage(conversation, 'Conversation loaded');
   }
 
   /** Creates a new conversation with ACTIVE status. */
@@ -81,7 +65,7 @@ export class ConversationController {
     description: 'Creates a conversation with title from request and sets status to ACTIVE.',
   })
   @ApiBody({ type: CreateConversationRequest })
-  createConversation(@Body() request: CreateConversationRequest): ResponseObject<ConversationModel> {
+  createConversation(@Body() request: CreateConversationRequest) {
     if (!request.title?.trim()) {
       throw new BadRequestException('Title is required');
     }
@@ -97,15 +81,7 @@ export class ConversationController {
 
     this.conversations.unshift(newConversation);
 
-    return {
-      success: true,
-      responseMessage: {
-        messageCode: '0000',
-        message: 'Conversation created',
-      },
-      serverTime: new Date().toISOString(),
-      data: newConversation,
-    };
+    return this.createOkResponseWithMessage(newConversation, 'Conversation created');
   }
 
   /** Renames a conversation title. */
@@ -118,7 +94,7 @@ export class ConversationController {
   renameConversation(
     @Param('conversationId') conversationId: string,
     @Body() request: UpdateConversationTitleRequest,
-  ): ResponseObject<ConversationModel> {
+  ) {
     const conversation = this.conversations.find((item) => item.conversationId === conversationId);
 
     if (!conversation) {
@@ -132,15 +108,7 @@ export class ConversationController {
     conversation.title = request.title.trim();
     conversation.updatedAt = new Date().toISOString();
 
-    return {
-      success: true,
-      responseMessage: {
-        messageCode: '0000',
-        message: 'Conversation renamed',
-      },
-      serverTime: new Date().toISOString(),
-      data: conversation,
-    };
+    return this.createOkResponseWithMessage(conversation, 'Conversation renamed');
   }
 
   /** Activates one conversation and sets all other conversations to INACTIVE. */
@@ -149,7 +117,7 @@ export class ConversationController {
     summary: 'Set one conversation as ACTIVE',
     description: 'Business rule: one ACTIVE conversation at a time. All others become INACTIVE.',
   })
-  activateConversation(@Param('conversationId') conversationId: string): ResponseObject<ConversationModel> {
+  activateConversation(@Param('conversationId') conversationId: string) {
     const targetConversation = this.conversations.find((item) => item.conversationId === conversationId);
 
     if (!targetConversation) {
@@ -166,15 +134,7 @@ export class ConversationController {
       conversation.updatedAt = new Date().toISOString();
     });
 
-    return {
-      success: true,
-      responseMessage: {
-        messageCode: '0000',
-        message: 'Conversation activated',
-      },
-      serverTime: new Date().toISOString(),
-      data: targetConversation,
-    };
+    return this.createOkResponseWithMessage(targetConversation, 'Conversation activated');
   }
 
   /** Archives one conversation by id. */
@@ -183,7 +143,7 @@ export class ConversationController {
     summary: 'Archive one conversation',
     description: 'Updates status of one conversation to ARCHIVED.',
   })
-  archiveConversation(@Param('conversationId') conversationId: string): ResponseObject<ConversationModel> {
+  archiveConversation(@Param('conversationId') conversationId: string) {
     const conversation = this.conversations.find((item) => item.conversationId === conversationId);
 
     if (!conversation) {
@@ -193,14 +153,6 @@ export class ConversationController {
     conversation.status = ConversationStatus.ARCHIVED;
     conversation.updatedAt = new Date().toISOString();
 
-    return {
-      success: true,
-      responseMessage: {
-        messageCode: '0000',
-        message: 'Conversation archived',
-      },
-      serverTime: new Date().toISOString(),
-      data: conversation,
-    };
+    return this.createOkResponseWithMessage(conversation, 'Conversation archived');
   }
 }
